@@ -24,6 +24,7 @@ async def lifespan(app: FastAPI):
         dsn=DATABASE_URL,
         min_size=1,
         max_size=5,
+        statement_cache_size=0,
         ssl="require",
     )
     yield
