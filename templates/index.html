@@ -1,0 +1,1645 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Pakistan Railways</title>
+  <link rel="icon" href="https://www.ce.com.pk/wp-content/uploads/2022/04/Pakistan-Railway-logo-1.png" type="image/jpeg">
+  <link rel="stylesheet" href="../static/style.css"/>
+</head>
+<body>
+
+  <!-- NAVBAR -->
+  <nav id="navbar">
+    <div class="nav-brand">
+      <div class="nav-logo">
+        <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="24" cy="24" r="20" stroke="#094d27" stroke-width="2.5" fill="#c8972a"/>
+          <rect x="10" y="16" width="28" height="14" rx="3" fill="#094d27"/>
+          <rect x="13" y="19" width="6" height="5" rx="1.5" fill="#c8972a"/>
+          <rect x="21" y="19" width="6" height="5" rx="1.5" fill="#c8972a"/>
+          <rect x="29" y="19" width="6" height="5" rx="1.5" fill="#c8972a"/>
+          <circle cx="16" cy="32" r="3.5" fill="#094d27" stroke="#c8972a" stroke-width="1.5"/>
+          <circle cx="32" cy="32" r="3.5" fill="#094d27" stroke="#c8972a" stroke-width="1.5"/>
+          <line x1="6" y1="36" x2="42" y2="36" stroke="#094d27" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+      </div>
+      <div class="nav-title">
+        <span class="nav-title-main">Pakistan Railways</span>
+        <span class="nav-title-sub">Connecting the Nation Since 1861</span>
+      </div>
+    </div>
+    <div class="nav-actions">
+      <button class="btn-login" id="btnLogin">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+          <circle cx="12" cy="7" r="4"/>
+        </svg>
+        <span id="btnLoginText">Login / Sign Up</span>
+      </button>
+      <button class="btn-booked" id="btnShowBookings">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/>
+        </svg>
+        Booked Tickets
+      </button>
+    </div>
+  </nav>
+
+  <!-- AUTH OVERLAY -->
+  <div class="login-page-overlay hidden" id="loginOverlay">
+    <div class="login-box">
+      <button class="login-close" id="loginClose">&times;</button>
+      <div class="login-logo">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+          <circle cx="12" cy="7" r="4"/>
+        </svg>
+      </div>
+      <h2 id="authTitle">Welcome Back</h2>
+      <p class="login-sub" id="authSubtitle">Pakistan Railways — Passenger Portal</p>
+      <div class="auth-tabs">
+        <button class="auth-tab active" id="tabLogin"  onclick="switchAuthMode('login')">Login / لاگ ان</button>
+        <button class="auth-tab"        id="tabSignup" onclick="switchAuthMode('signup')">Sign Up / رجسٹر</button>
+      </div>
+      <div class="login-field" id="fieldName" style="display:none;">
+        <label>Full Name / پورا نام</label>
+        <input type="text" id="authName" placeholder="Your full name" />
+      </div>
+      <div class="login-field">
+        <label>Email Address / ای میل</label>
+        <input type="email" id="authEmail" placeholder="yourname@email.com" />
+      </div>
+      <div class="login-field">
+        <label>Password / پاس ورڈ</label>
+        <input type="password" id="authPassword" placeholder="••••••••" />
+        <div class="password-strength-bar">
+          <div class="psb-seg" id="psb1"></div>
+          <div class="psb-seg" id="psb2"></div>
+          <div class="psb-seg" id="psb3"></div>
+          <div class="psb-seg" id="psb4"></div>
+        </div>
+        <div class="pass-req-list" id="passReqList">
+          <span class="pass-req" id="req-upper">Uppercase</span>
+          <span class="pass-req" id="req-number">Number</span>
+          <span class="pass-req" id="req-special">Special char</span>
+          <span class="pass-req" id="req-length">8+ chars</span>
+        </div>
+        <div class="password-hint" id="passHint"></div>
+      </div>
+      <div class="login-field confirm-pass-field hidden" id="fieldConfirm">
+        <label>Confirm Password / پاس ورڈ تصدیق</label>
+        <input type="password" id="authConfirmPass" placeholder="••••••••" />
+        <div class="pass-match-hint" id="passMatchHint"></div>
+      </div>
+      <button class="btn-login-submit" id="btnAuthSubmit">Login / لاگ ان</button>
+      <div class="auth-switch" id="authSwitch">
+        Don't have an account? <a onclick="switchAuthMode('signup')">Sign Up</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- LOGIN REQUIRED POPUP (for ticket download) -->
+  <div class="login-required-overlay hidden" id="loginRequiredOverlay">
+    <div class="login-required-box">
+      <div class="lr-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+          <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+        </svg>
+      </div>
+      <h3>Login Required / لاگ ان ضروری ہے</h3>
+      <p>Please log in to download your ticket. Your account keeps all bookings safe and accessible.</p>
+      <div class="lr-actions">
+        <button class="btn-lr-cancel" id="btnLrCancel">Not Now</button>
+        <button class="btn-lr-login"  id="btnLrLogin">Login / Sign Up</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ════ LOGIN REQUIRED FOR SEARCH POPUP ════ -->
+  <div class="login-required-overlay hidden" id="searchLoginOverlay" style="z-index:9999;">
+    <div class="login-required-box" style="border: 1px solid rgba(200,151,42,0.3); max-width:420px;">
+      <div class="lr-icon" style="color:#946a00; background:#EEE6D0; border: 1px solid rgba(200,151,42,0.3);">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="10"/>
+          <line x1="12" y1="8" x2="12" y2="12"/>
+          <line x1="12" y1="16" x2="12.01" y2="16"/>
+        </svg>
+      </div>
+      <h3 style="color:rgb(0, 0, 0);">Login Required / لاگ ان ضروری ہے</h3>
+      <p style="color:#946a00; font-weight:500;">ٹکٹ تلاش کرنے کے لیے پہلے لاگ ان کریں۔</p>
+      <p style="color:green; font-size:0.9rem; margin-top:4px;">Please log in first to search and book train tickets.</p>
+      <div class="lr-actions">
+        <button class="btn-lr-cancel" id="btnSearchLrCancel">Cancel</button>
+        <button class="btn-lr-login" id="btnSearchLrLogin" style="background: linear-gradient(135deg, var(--green-dark), var(--green-light));">Login / Sign Up</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ════ DATE LIMIT ERROR POPUP ════ -->
+  <div class="login-required-overlay hidden" id="dateLimitOverlay" style="z-index:9999;">
+    <div class="login-required-box" style="border-top: 4px solid #e53e3e; max-width:440px;">
+      <div class="lr-icon" style="color:#e53e3e; background:rgba(229,62,62,0.1); border-color:rgba(229,62,62,0.3);">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="3" y="4" width="18" height="18" rx="2"/>
+          <line x1="16" y1="2" x2="16" y2="6"/>
+          <line x1="8" y1="2" x2="8" y2="6"/>
+          <line x1="3" y1="10" x2="21" y2="10"/>
+          <line x1="12" y1="14" x2="12" y2="18"/>
+          <line x1="10" y1="16" x2="14" y2="16"/>
+        </svg>
+      </div>
+      <h3 style="color:#c53030;">Booking Unavailable / بکنگ دستیاب نہیں</h3>
+      <p id="dateLimitMsg" style="color:#742a2a; font-weight:600; font-size:0.95rem;"></p>
+      <p style="color:#555; font-size:0.85rem; margin-top:6px;">صرف آنے والے 2 مہینوں کی بکنگ ممکن ہے۔<br/>Bookings are only available up to 2 months in advance.</p>
+      <div class="lr-actions">
+        <button class="btn-lr-login" id="btnDateLimitOk" style="background:#c53030; min-width:120px;">OK, Got It</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- CANCEL CONFIRM MODAL -->
+  <div class="cancel-confirm-overlay hidden" id="cancelConfirmOverlay">
+    <div class="cancel-confirm-box">
+      <div class="cancel-confirm-header">
+        <div class="cancel-warn-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+            <line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
+          </svg>
+        </div>
+        <div>
+          <h3>Cancel Ticket?</h3>
+          <p id="cancelTicketInfo">This action cannot be undone.</p>
+        </div>
+      </div>
+      <div class="cancel-confirm-body">
+        <div class="cancel-ticket-info">
+          <span>PNR</span>
+          <strong id="cancelPnrDisplay">—</strong>
+        </div>
+        <div class="cancel-pass-field">
+          <label>Enter Your Password to Confirm / تصدیق کے لیے پاس ورڈ</label>
+          <input type="password" id="cancelPasswordInput" placeholder="••••••••" />
+          <span class="cancel-pass-error" id="cancelPassError">❌ Incorrect password. Please try again.</span>
+        </div>
+        <div class="cancel-confirm-actions">
+          <button class="btn-cancel-no"  id="btnCancelNo">Keep Ticket</button>
+          <button class="btn-cancel-yes" id="btnCancelYes">Cancel Ticket</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- HERO -->
+  <section class="hero" id="heroSection">
+    <div class="hero-bg"></div>
+    <div class="hero-content">
+      <p class="hero-tagline">Your Journey, Our Pride</p>
+      <h1 class="hero-heading">Book Train Tickets<br/>Across Pakistan</h1>
+      <div class="search-card">
+        <div class="search-row">
+          <div class="field-group">
+            <label for="sourceSelect">From</label>
+            <div class="select-wrapper">
+              <svg class="select-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M4.22 4.22l2.12 2.12M17.66 17.66l2.12 2.12M2 12h3M19 12h3M4.22 19.78l2.12-2.12M17.66 6.34l2.12-2.12"/></svg>
+              <select id="sourceSelect"><option value="" disabled selected>Select Origin</option></select>
+              <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+            </div>
+          </div>
+          <button class="swap-btn" id="swapBtn" title="Swap stations">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M7 16V4m0 0L3 8m4-4l4 4"/><path d="M17 8v12m0 0l4-4m-4 4l-4-4"/></svg>
+          </button>
+          <div class="field-group">
+            <label for="destSelect">To</label>
+            <div class="select-wrapper">
+              <svg class="select-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+              <select id="destSelect"><option value="" disabled selected>Select Destination</option></select>
+              <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+            </div>
+          </div>
+          <div class="field-group">
+            <label>Date</label>
+            <div class="date-wrapper">
+              <svg class="date-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="3" y="4" width="18" height="18" rx="2"/>
+                <line x1="16" y1="2" x2="16" y2="6"/>
+                <line x1="8" y1="2" x2="8" y2="6"/>
+                <line x1="3" y1="10" x2="21" y2="10"/>
+              </svg>
+              <input type="date" id="travelDate" class="date-hidden-input" />
+              <div class="date-display" id="dateDisplay">Select Date</div>
+            </div>
+          </div>
+        </div>
+        <button class="btn-search" id="btnSearch">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          Search Trains
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <!-- RESULTS -->
+  <section class="results-section" id="resultsSection" style="display:none;">
+    <div class="results-header">
+      <h2 id="resultsTitle">Available Trains</h2>
+      <button class="btn-back" id="btnBack">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+        New Search
+      </button>
+    </div>
+    <div class="trains-grid" id="trainsGrid"></div>
+  </section>
+
+  <!-- BOOKING MODAL -->
+  <div class="modal-overlay" id="bookingModal" style="display:none;">
+    <div class="modal-box">
+      <div class="modal-header">
+        <h3 id="modalTrainName">Book Ticket</h3>
+        <button class="modal-close" id="modalClose">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="step-indicator">
+          <div class="step-dot active" id="stepDot1">
+            <div class="step-dot-circle">1</div>
+            <span class="step-dot-label">Passenger</span>
+          </div>
+          <div class="step-line" id="stepLine1"></div>
+          <div class="step-dot" id="stepDot2">
+            <div class="step-dot-circle">2</div>
+            <span class="step-dot-label">Payment</span>
+          </div>
+          <div class="step-line" id="stepLine2"></div>
+          <div class="step-dot" id="stepDot3">
+            <div class="step-dot-circle">3</div>
+            <span class="step-dot-label">Confirmed</span>
+          </div>
+        </div>
+
+        <!-- STEP 1 -->
+        <div class="modal-step active" id="step1">
+          <div class="modal-grid">
+            <div class="field-group-modal">
+              <label>Passenger Name / نام</label>
+              <input type="text" id="pName" placeholder="Full name as on CNIC" />
+            </div>
+            <div class="field-group-modal">
+              <label>CNIC Number / شناخت نمبر</label>
+              <input type="text" id="pCnic" placeholder="XXXXX-XXXXXXX-X" maxlength="15" />
+            </div>
+            <div class="field-group-modal">
+              <label>Phone Number / فون</label>
+              <input type="text" id="pPhone" placeholder="03XX-XXXXXXX" />
+            </div>
+            <div class="field-group-modal">
+              <label>Passenger Type / قسم</label>
+              <select id="pType">
+                <option value="Adult">Adult / بالغ</option>
+                <option value="Child">Child / بچہ (50% off)</option>
+              </select>
+            </div>
+          </div>
+          <div class="field-group-modal" style="margin-bottom:16px;">
+            <label>Travel Class / کلاس</label>
+            <select id="pClass">
+              <option value="AC Business">AC Business</option>
+              <option value="AC Standard">AC Standard</option>
+              <option value="Economy">Economy</option>
+            </select>
+          </div>
+          <div class="seat-picker-wrap">
+            <label>Select Seat / سیٹ منتخب کریں</label>
+            <div class="seat-legend">
+              <div class="legend-item"><div class="legend-dot avail"></div> Available</div>
+              <div class="legend-item"><div class="legend-dot unavail"></div> Unavailable / Booked</div>
+              <div class="legend-item"><div class="legend-dot sel"></div> Selected</div>
+            </div>
+            <div class="coach-tabs" id="coachTabs"></div>
+            <div class="cabins-grid" id="cabinsGrid"><div class="seat-loading">Loading seats…</div></div>
+            <div class="selected-seat-display" id="selectedSeatDisplay">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 9V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v3"/><path d="M2 11l1 9h18l1-9H2z"/></svg>
+              <span id="selectedSeatText">No seat selected — tap a green berth above</span>
+            </div>
+          </div>
+          <div class="fare-summary-box">
+            <div class="fare-row">
+              <span class="fare-row-label">Base Fare / کرایہ</span>
+              <span class="fare-row-value" id="fareBase">Rs. —</span>
+            </div>
+            <div class="fare-divider"></div>
+            <div class="fare-row">
+              <span class="fare-total-label">Total Payable / کل رقم</span>
+              <span class="fare-total-value" id="fareTotal">Rs. —</span>
+            </div>
+          </div>
+          <button class="btn-proceed" id="btnProceedToPayment">
+            Proceed to Payment
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+          </button>
+        </div>
+
+        <!-- STEP 2 -->
+        <div class="modal-step" id="step2">
+          <div class="payment-box">
+            <h4>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
+              Secure Payment / محفوظ ادائیگی
+            </h4>
+            <div class="payment-amount-display">
+              <span>Amount to Pay / ادا کرنے کی رقم</span>
+              <strong id="payAmount">Rs. —</strong>
+            </div>
+            <div class="payment-grid">
+              <div class="field-group-modal">
+                <label>Card Last 4 Digits</label>
+                <input type="text" id="pCard" placeholder="XXXX" maxlength="4" inputmode="numeric" />
+              </div>
+              <div class="field-group-modal">
+                <label>MPIN (6 digits)</label>
+                <input type="password" id="pMpin" placeholder="••••••" maxlength="6" inputmode="numeric" />
+              </div>
+            </div>
+          </div>
+          <div class="processing-overlay" id="processingOverlay">
+            <div class="spinner"></div>
+            <p>Processing your payment…<br/><span style="font-size:0.85rem;color:var(--text-muted)">Please do not close this window</span></p>
+          </div>
+          <div id="payBtnWrapper">
+            <button class="btn-pay" id="btnPay">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+              Confirm &amp; Pay / تصدیق اور ادائیگی
+            </button>
+          </div>
+        </div>
+
+        <!-- STEP 3 -->
+        <div class="modal-step" id="step3">
+          <div class="success-step">
+            <div class="success-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+            </div>
+            <h4>Booking Confirmed! / بکنگ تصدیق شدہ!</h4>
+            <p>Your ticket has been successfully booked.</p>
+            <div class="success-pnr" id="successPnr">PNR: —</div>
+            <p style="color:var(--text-muted);font-size:0.85rem;margin-bottom:24px;">Total charged: <strong id="successTotal" style="color:var(--green-dark)">Rs. —</strong></p>
+            <button class="btn-generate-ticket" id="btnGenerateTicket">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+              Download E-Ticket (PDF) / ڈاؤن لوڈ کریں
+            </button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- BOOKED TICKETS MODAL -->
+  <div class="modal-overlay" id="bookingsModal" style="display:none;">
+    <div class="modal-box modal-box--wide">
+      <div class="modal-header">
+        <h3>My Booked Tickets / میری بوک شدہ ٹکٹیں</h3>
+        <button class="modal-close" id="bookingsModalClose">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div id="bookingsList"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <script>
+    /* ════════════════════════════════════════════════════
+       CORE CONFIG
+    ════════════════════════════════════════════════════ */
+    const API          = '';
+    const BASE_PRICES  = { 'AC Business': 13250, 'AC Standard': 6500, 'Economy': 3500 };
+    const RABTA_CHARGE = 10;
+
+    const $ = id => document.getElementById(id);
+    const todayStr = () => new Date().toISOString().split('T')[0];
+
+    function getMaxBookingDate() {
+      const today = new Date();
+      const maxDate = new Date(today.getFullYear(), today.getMonth() + 2, today.getDate());
+      return maxDate.toISOString().split('T')[0];
+    }
+
+    function formatDatePretty(dateStr) {
+      const d = new Date(dateStr + 'T00:00:00');
+      return d.toLocaleDateString('en-PK', { day: 'numeric', month: 'long', year: 'numeric' });
+    }
+
+    /* ════════════════════════════════════════════════════
+       LOCAL STORAGE — Users & Bookings
+    ════════════════════════════════════════════════════ */
+    function getUsers()         { return JSON.parse(localStorage.getItem('pr_users')    || '{}'); }
+    function saveUsers(u)       { localStorage.setItem('pr_users',    JSON.stringify(u)); }
+    function getAllBookings()    { return JSON.parse(localStorage.getItem('pr_bookings') || '[]'); }
+    function saveAllBookings(b) { localStorage.setItem('pr_bookings', JSON.stringify(b)); }
+
+    function bookedSeatKey(trainId, cls, date) {
+      return `pr_seats_${trainId}_${cls.replace(/\s+/g,'_')}_${date}`;
+    }
+    function getBookedSeats(trainId, cls, date) {
+      return JSON.parse(localStorage.getItem(bookedSeatKey(trainId, cls, date)) || '[]');
+    }
+    function addBookedSeat(trainId, cls, date, seatLabel) {
+      const key   = bookedSeatKey(trainId, cls, date);
+      const seats = getBookedSeats(trainId, cls, date);
+      if (!seats.includes(seatLabel)) {
+        seats.push(seatLabel);
+        localStorage.setItem(key, JSON.stringify(seats));
+      }
+    }
+    function removeBookedSeat(trainId, cls, date, seatLabel) {
+      const key   = bookedSeatKey(trainId, cls, date);
+      const seats = getBookedSeats(trainId, cls, date).filter(s => s !== seatLabel);
+      localStorage.setItem(key, JSON.stringify(seats));
+    }
+
+    /* ════════════════════════════════════════════════════
+       SESSION STATE
+    ════════════════════════════════════════════════════ */
+    let isLoggedIn    = false;
+    let loggedInUser  = '';
+    let loggedInName  = '';
+    let userPassword  = '';
+    let authMode      = 'login';
+
+    let selectedTrain      = null;
+    let travelDateGlobal   = '';
+    let userSource         = '';
+    let userDestination    = '';
+    let confirmedBookingId = null;
+    let currentSeatLabel   = '';
+    let seatData           = {};
+    let activeCoach        = '';
+
+    /* ════════════════════════════════════════════════════
+       TOAST
+    ════════════════════════════════════════════════════ */
+    function showToast(msg, type = 'success') {
+      const t = $('toast');
+      t.textContent = msg;
+      t.className   = `toast toast--${type} toast--show`;
+      setTimeout(() => t.className = 'toast', 3400);
+    }
+
+    /* ════════════════════════════════════════════════════
+       DATE PICKER — with 2-month max constraint
+    ════════════════════════════════════════════════════ */
+    const travelDateInput = $('travelDate');
+    const dateDisplay     = $('dateDisplay');
+
+    function formatDateDisplay(val) {
+      if (!val) return 'Select Date';
+      const d = new Date(val + 'T00:00:00');
+      return d.toLocaleDateString('en-PK', { weekday:'short', day:'numeric', month:'short', year:'numeric' });
+    }
+
+    const tomorrowStr = () => {
+      const d = new Date();
+      d.setDate(d.getDate() + 1);
+      return d.toISOString().split('T')[0];
+    };
+
+    travelDateInput.min     = tomorrowStr();
+    travelDateInput.max     = getMaxBookingDate();
+    travelDateInput.value   = tomorrowStr();
+    dateDisplay.textContent = formatDateDisplay(tomorrowStr());
+
+    travelDateInput.addEventListener('change', () => {
+      dateDisplay.textContent = formatDateDisplay(travelDateInput.value);
+    });
+
+    /* ════════════════════════════════════════════════════
+       SEARCH LOGIN POPUP — handlers
+    ════════════════════════════════════════════════════ */
+    $('btnSearchLrCancel').addEventListener('click', () => $('searchLoginOverlay').classList.add('hidden'));
+    $('searchLoginOverlay').addEventListener('click', e => {
+      if (e.target === $('searchLoginOverlay')) $('searchLoginOverlay').classList.add('hidden');
+    });
+    $('btnSearchLrLogin').addEventListener('click', () => {
+      $('searchLoginOverlay').classList.add('hidden');
+      openAuthOverlay('login');
+    });
+
+    /* ════════════════════════════════════════════════════
+       DATE LIMIT POPUP — handlers
+    ════════════════════════════════════════════════════ */
+    $('btnDateLimitOk').addEventListener('click', () => $('dateLimitOverlay').classList.add('hidden'));
+    $('dateLimitOverlay').addEventListener('click', e => {
+      if (e.target === $('dateLimitOverlay')) $('dateLimitOverlay').classList.add('hidden');
+    });
+
+    function showDateLimitError(selectedDate) {
+      const maxDate = getMaxBookingDate();
+      $('dateLimitMsg').textContent =
+        `آپ نے ${formatDatePretty(selectedDate)} منتخب کی ہے، لیکن بکنگ صرف ${formatDatePretty(maxDate)} تک دستیاب ہے۔`;
+      $('dateLimitOverlay').classList.remove('hidden');
+    }
+
+    /* ════════════════════════════════════════════════════
+       PASSWORD STRENGTH
+    ════════════════════════════════════════════════════ */
+    function checkPasswordStrength(pass) {
+      const hasUpper   = /[A-Z]/.test(pass);
+      const hasNumber  = /[0-9]/.test(pass);
+      const hasSpecial = /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?`~]/.test(pass);
+      const hasLength  = pass.length >= 8;
+
+      $('req-upper').classList.toggle('met', hasUpper);
+      $('req-number').classList.toggle('met', hasNumber);
+      $('req-special').classList.toggle('met', hasSpecial);
+      $('req-length').classList.toggle('met', hasLength);
+
+      const score = [hasUpper, hasNumber, hasSpecial, hasLength].filter(Boolean).length;
+      const segs  = [$('psb1'), $('psb2'), $('psb3'), $('psb4')];
+      const hint  = $('passHint');
+      segs.forEach(s => s.className = 'psb-seg');
+
+      if (!pass.length) { hint.textContent = ''; hint.className = 'password-hint'; return { valid:false }; }
+
+      if (score <= 1) {
+        segs[0].classList.add('weak');
+        hint.textContent = 'Weak — add more characters & symbols'; hint.className = 'password-hint weak';
+      } else if (score === 2) {
+        segs[0].classList.add('medium'); segs[1].classList.add('medium');
+        hint.textContent = 'Fair — almost there!'; hint.className = 'password-hint medium';
+      } else if (score === 3) {
+        segs[0].classList.add('medium'); segs[1].classList.add('medium'); segs[2].classList.add('medium');
+        hint.textContent = 'Good — one more requirement'; hint.className = 'password-hint medium';
+      } else {
+        segs.forEach(s => s.classList.add('strong'));
+        hint.textContent = '✓ Strong password'; hint.className = 'password-hint strong';
+      }
+      return { valid: hasUpper && hasNumber && hasSpecial && hasLength };
+    }
+
+    $('authPassword').addEventListener('input', () => { checkPasswordStrength($('authPassword').value); checkConfirmMatch(); });
+    $('authConfirmPass').addEventListener('input', checkConfirmMatch);
+
+    function checkConfirmMatch() {
+      const p1 = $('authPassword').value;
+      const p2 = $('authConfirmPass').value;
+      const el = $('passMatchHint');
+      if (!p2.length) { el.textContent = ''; el.className = 'pass-match-hint'; return; }
+      if (p1 === p2)  { el.textContent = '✓ Passwords match'; el.className = 'pass-match-hint match'; }
+      else            { el.textContent = '✗ Passwords do not match'; el.className = 'pass-match-hint nomatch'; }
+    }
+
+    /* ════════════════════════════════════════════════════
+       AUTH MODE SWITCH
+    ════════════════════════════════════════════════════ */
+    function switchAuthMode(mode) {
+      authMode = mode;
+      const isSignup = mode === 'signup';
+      $('tabLogin').classList.toggle('active',  !isSignup);
+      $('tabSignup').classList.toggle('active',  isSignup);
+      $('fieldName').style.display   = isSignup ? '' : 'none';
+      $('fieldConfirm').classList.toggle('hidden', !isSignup);
+      $('passReqList').style.display = isSignup ? '' : 'flex';
+      $('authTitle').textContent     = isSignup ? 'Create Account' : 'Welcome Back';
+      $('authSubtitle').textContent  = isSignup ? 'Register as a new passenger' : 'Pakistan Railways — Passenger Portal';
+      $('btnAuthSubmit').textContent  = isSignup ? 'Sign Up / رجسٹر کریں' : 'Login / لاگ ان';
+      $('authSwitch').innerHTML      = isSignup
+        ? 'Already have an account? <a onclick="switchAuthMode(\'login\')">Login</a>'
+        : 'Don\'t have an account? <a onclick="switchAuthMode(\'signup\')">Sign Up</a>';
+      $('authPassword').value = '';
+      $('authConfirmPass').value = '';
+      checkPasswordStrength('');
+      $('passMatchHint').textContent = '';
+    }
+
+    function openAuthOverlay(preferMode) {
+      if (preferMode) switchAuthMode(preferMode);
+      $('loginOverlay').classList.remove('hidden');
+      $('authEmail').value = $('authPassword').value = $('authName').value = $('authConfirmPass').value = '';
+      checkPasswordStrength('');
+      setTimeout(() => $('authEmail').focus(), 150);
+    }
+
+    $('btnLogin').addEventListener('click', () => {
+      if (isLoggedIn) {
+        isLoggedIn = false; loggedInUser = ''; loggedInName = ''; userPassword = '';
+        updateNavState();
+        showToast('Logged out successfully / لاگ آؤٹ کامیاب', 'logout');
+      } else {
+        openAuthOverlay('login');
+      }
+    });
+
+    $('loginClose').addEventListener('click', () => $('loginOverlay').classList.add('hidden'));
+    $('loginOverlay').addEventListener('click', e => { if (e.target === $('loginOverlay')) $('loginOverlay').classList.add('hidden'); });
+
+    $('btnAuthSubmit').addEventListener('click', handleAuthSubmit);
+    [$('authEmail'), $('authPassword'), $('authConfirmPass'), $('authName')].forEach(inp => {
+      inp.addEventListener('keydown', e => { if (e.key === 'Enter') handleAuthSubmit(); });
+    });
+
+    function handleAuthSubmit() {
+      const email = $('authEmail').value.trim().toLowerCase();
+      const pass  = $('authPassword').value;
+      const name  = $('authName').value.trim();
+
+      if (!email || !pass) { showToast('Please enter email and password', 'error'); return; }
+      if (!email.includes('@') || !email.includes('.')) { showToast('Please enter a valid email address', 'error'); return; }
+
+      const users = getUsers();
+
+      if (authMode === 'signup') {
+        if (!name) { showToast('Please enter your full name', 'error'); return; }
+        const { valid } = checkPasswordStrength(pass);
+        if (!valid) { showToast('Password must include uppercase, number & special character', 'error'); return; }
+        if (pass !== $('authConfirmPass').value) { showToast('Passwords do not match', 'error'); return; }
+        if (users[email]) { showToast('Email already registered. Please login.', 'error'); return; }
+        users[email] = { name, password: pass, createdAt: new Date().toISOString() };
+        saveUsers(users);
+        loginUser(email, name, pass);
+        showToast(`Account created! Welcome, ${name} 🎉`, 'success');
+      } else {
+        if (!users[email]) { showToast('No account found. Please sign up first.', 'error'); return; }
+        if (users[email].password !== pass) { showToast('Incorrect password / غلط پاس ورڈ', 'error'); return; }
+        loginUser(email, users[email].name, pass);
+        showToast(`Welcome back, ${users[email].name} 👋`, 'success');
+      }
+
+      $('loginOverlay').classList.add('hidden');
+    }
+
+    function loginUser(email, name, pass) {
+      isLoggedIn = true; loggedInUser = email; loggedInName = name; userPassword = pass;
+      updateNavState();
+    }
+
+    function updateNavState() {
+      const btn  = $('btnLogin');
+      const text = $('btnLoginText');
+      if (isLoggedIn) {
+        btn.classList.add('logged-in');
+        text.textContent = 'Log Out';
+        btn.querySelector('svg').innerHTML = `<path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/>`;
+      } else {
+        btn.classList.remove('logged-in');
+        text.textContent = 'Login / Sign Up';
+        btn.querySelector('svg').innerHTML = `<path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>`;
+      }
+    }
+
+    /* ════════════════════════════════════════════════════
+       LOGIN REQUIRED POPUP (for ticket download)
+    ════════════════════════════════════════════════════ */
+    function showLoginRequired() { $('loginRequiredOverlay').classList.remove('hidden'); }
+
+    $('btnLrCancel').addEventListener('click', () => $('loginRequiredOverlay').classList.add('hidden'));
+    $('loginRequiredOverlay').addEventListener('click', e => { if (e.target === $('loginRequiredOverlay')) $('loginRequiredOverlay').classList.add('hidden'); });
+    $('btnLrLogin').addEventListener('click', () => {
+      $('loginRequiredOverlay').classList.add('hidden');
+      openAuthOverlay('login');
+    });
+
+    /* ════════════════════════════════════════════════════
+       CANCEL CONFIRM MODAL
+    ════════════════════════════════════════════════════ */
+    let pendingCancelId  = null;
+    let pendingCancelPnr = '';
+    let isCancelling     = false;   // ← double-trigger guard
+
+    function openCancelConfirm(id, pnr) {
+      pendingCancelId  = id;
+      pendingCancelPnr = pnr;
+      $('cancelPnrDisplay').textContent = pnr || '—';
+      $('cancelTicketInfo').textContent = 'This action cannot be undone / یہ عمل واپس نہیں ہو سکتا';
+      $('cancelPasswordInput').value    = '';
+      $('cancelPasswordInput').classList.remove('error');
+      $('cancelPassError').classList.remove('visible');
+      isCancelling = false;
+      $('cancelConfirmOverlay').classList.remove('hidden');
+      setTimeout(() => $('cancelPasswordInput').focus(), 200);
+    }
+
+    $('btnCancelNo').addEventListener('click', () => {
+      $('cancelConfirmOverlay').classList.add('hidden');
+      pendingCancelId = null;
+      isCancelling = false;
+    });
+
+    $('cancelConfirmOverlay').addEventListener('click', e => {
+      if (e.target === $('cancelConfirmOverlay')) {
+        $('cancelConfirmOverlay').classList.add('hidden');
+        pendingCancelId = null;
+        isCancelling = false;
+      }
+    });
+
+    /* ── Shared cancel execution function ── */
+    async function executeCancelTicket() {
+      /* Guard: agar already cancel ho raha hai to dobara mat chalo */
+      if (isCancelling) return;
+
+      const entered = $('cancelPasswordInput').value.trim();
+
+      /* Password check */
+      if (!isLoggedIn || entered !== userPassword) {
+        $('cancelPasswordInput').classList.add('error');
+        $('cancelPassError').classList.add('visible');
+        $('cancelPasswordInput').addEventListener('animationend', () => {
+          $('cancelPasswordInput').classList.remove('error');
+        }, { once: true });
+        return;
+      }
+
+      /* Lock so Enter + button dono ek saath na chalein */
+      isCancelling = true;
+      $('btnCancelYes').disabled    = true;
+      $('btnCancelYes').textContent = 'Cancelling…';
+
+      let cancelled = false;
+
+      try {
+        const res  = await fetch(`${API}/delete-booking/${pendingCancelId}`, { method: 'DELETE' });
+        const data = await res.json();
+        if (res.ok) {
+          cancelled = true;
+        }
+      } catch { /* backend not available, fall through to local */ }
+
+      /* localStorage se hatao — hamesha, chahe backend ho ya na ho */
+      const all     = getAllBookings();
+      const booking = all.find(b => b.id === pendingCancelId);
+      if (booking) {
+        removeBookedSeat(booking.train_id, booking.selected_class, booking.travel_date, booking.seat);
+      }
+      const updated = all.filter(b => b.id !== pendingCancelId);
+      saveAllBookings(updated);
+
+      /* ── Sirf refund wala popup dikhao ── */
+      $('cancelConfirmOverlay').classList.add('hidden');
+      pendingCancelId = null;
+      $('btnCancelYes').disabled    = false;
+      $('btnCancelYes').textContent = 'Cancel Ticket';
+      isCancelling = false;
+
+      showRefundPopup(booking);
+      loadBookings();
+    }
+
+    /* Button click */
+    $('btnCancelYes').addEventListener('click', executeCancelTicket);
+
+    /* Password field Enter key */
+    $('cancelPasswordInput').addEventListener('keydown', e => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        executeCancelTicket();
+      }
+    });
+
+    /* ════════════════════════════════════════════════════
+       REFUND POPUP
+    ════════════════════════════════════════════════════ */
+    function showRefundPopup(booking) {
+      /* Agar booking nahi mili */
+      const refundAmount = booking ? Math.round((booking.total || 0) * 0.85) : 0;
+      const pnr          = booking ? booking.pnr : '—';
+
+      /* Dynamic popup banao */
+      const overlay = document.createElement('div');
+      overlay.className = 'login-required-overlay';
+      overlay.style.cssText = 'z-index:99999; display:flex;';
+
+      overlay.innerHTML = `
+        <div class="login-required-box" style="border-top:4px solid #0d6b36; max-width:440px; text-align:center;">
+          <div class="lr-icon" style="color:#0d6b36; background:rgba(13,107,54,0.1); border-color:rgba(13,107,54,0.3); margin:0 auto 16px;">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+              <polyline points="9 12 11 14 15 10"/>
+            </svg>
+          </div>
+          <h3 style="color:#083d1f; margin-bottom:8px;">ٹکٹ منسوخ ہو گئی</h3>
+          <p style="color:#0d6b36; font-weight:600; font-size:1rem; margin-bottom:6px;">
+            Ticket Cancelled Successfully
+          </p>
+          <p style="color:#555; font-size:0.88rem; margin-bottom:4px;">
+            PNR: <strong style="color:#083d1f;">${pnr}</strong>
+          </p>
+          <div style="background:rgba(13,107,54,0.08); border:1px solid rgba(13,107,54,0.25); border-radius:10px; padding:14px 20px; margin:14px 0;">
+            <p style="color:#555; font-size:0.82rem; margin:0 0 6px;">Refundable Amount / واپسی کی رقم</p>
+            <p style="font-size:1.5rem; font-weight:800; color:#083d1f; margin:0;">
+              Rs. ${refundAmount.toLocaleString()}
+            </p>
+            <p style="color:#888; font-size:0.75rem; margin:6px 0 0;">
+              (15% cancellation fee deducted / منہا کیا گیا)
+            </p>
+          </div>
+          <p style="color:#777; font-size:0.8rem; margin-bottom:20px;">
+            رقم 3-5 کاروباری دنوں میں آپ کے اکاؤنٹ میں واپس کر دی جائے گی۔<br/>
+            Refund will be processed within 3–5 business days.
+          </p>
+          <div class="lr-actions" style="justify-content:center;">
+            <button class="btn-lr-login" id="btnRefundOk"
+              style="background:linear-gradient(135deg,#083d1f,#0d6b36); min-width:140px;">
+              ٹھیک ہے — OK
+            </button>
+          </div>
+        </div>`;
+
+      document.body.appendChild(overlay);
+
+      const closeRefund = () => {
+        overlay.remove();
+      };
+
+      overlay.querySelector('#btnRefundOk').addEventListener('click', closeRefund);
+      overlay.addEventListener('click', e => { if (e.target === overlay) closeRefund(); });
+      document.addEventListener('keydown', function escClose(e) {
+        if (e.key === 'Escape' || e.key === 'Enter') {
+          closeRefund();
+          document.removeEventListener('keydown', escClose);
+        }
+      });
+    }
+
+    /* ════════════════════════════════════════════════════
+       STATIONS LOADER
+    ════════════════════════════════════════════════════ */
+    async function loadStations() {
+      const defaultStations = [
+        'Karachi City','Karachi Cantonment','Hyderabad','Kotri','Nawabshah',
+        'Sukkur','Rohri','Bahawalpur','Multan','Sahiwal','Lahore',
+        'Gujranwala','Sialkot','Faisalabad','Rawalpindi','Islamabad',
+        'Attock','Peshawar','Quetta','Larkana'
+      ];
+
+      let stations = defaultStations;
+      try {
+        const res  = await fetch(`${API}/get-stations`);
+        const data = await res.json();
+        if (data.stations && data.stations.length) stations = data.stations;
+      } catch { /* use defaults */ }
+
+      ['sourceSelect', 'destSelect'].forEach(id => {
+        const sel = $(id);
+        stations.forEach(s => {
+          const opt = document.createElement('option');
+          opt.value = opt.textContent = s;
+          sel.appendChild(opt);
+        });
+      });
+    }
+    loadStations();
+
+    $('swapBtn').addEventListener('click', () => {
+      const src = $('sourceSelect').value;
+      const dst = $('destSelect').value;
+      $('sourceSelect').value = dst;
+      $('destSelect').value   = src;
+    });
+
+    /* ════════════════════════════════════════════════════
+       TRAIN SEARCH
+    ════════════════════════════════════════════════════ */
+    $('btnSearch').addEventListener('click', async () => {
+      const source = $('sourceSelect').value;
+      const dest   = $('destSelect').value;
+      const dt     = travelDateInput.value;
+
+      if (!isLoggedIn) {
+        $('searchLoginOverlay').classList.remove('hidden');
+        return;
+      }
+
+      if (!source || !dest || !dt) { showToast('Please fill all fields', 'error'); return; }
+      if (source === dest)         { showToast('Source and destination cannot be same', 'error'); return; }
+
+      const maxDate = getMaxBookingDate();
+      if (dt > maxDate) {
+        showDateLimitError(dt);
+        return;
+      }
+
+      userSource = source; userDestination = dest; travelDateGlobal = dt;
+
+      const btn = $('btnSearch');
+      btn.innerHTML = 'Searching…'; btn.disabled = true;
+
+      let trains = null;
+      try {
+        const res  = await fetch(`${API}/search-trains?source=${encodeURIComponent(source)}&destination=${encodeURIComponent(dest)}&travel_date=${dt}`);
+        const data = await res.json();
+        if (res.ok) trains = data.trains;
+      } catch { /* generate mock trains */ }
+
+      btn.innerHTML = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg> Search Trains`;
+      btn.disabled = false;
+
+      if (!trains) {
+        trains = generateMockTrains(source, dest);
+      }
+
+      renderTrains(trains, source, dest, dt);
+    });
+
+    /* Mock train generator for offline use */
+    function generateMockTrains(src, dst) {
+      const trainNames = [
+        { name:'Karachi Express', id:1 }, { name:'Tezgam Express', id:2 },
+        { name:'Green Line Express', id:3 }, { name:'Business Express', id:4 },
+        { name:'Shalimar Express', id:5 }
+      ];
+      const times = ['06:00', '09:30', '14:00', '18:15', '22:45'];
+      const labels = ['Available', 'Limited Seats', 'Booking Open'];
+      return trainNames.slice(0, 3).map((t, i) => ({
+        id: t.id, name: t.name, source: src, destination: dst,
+        time: times[i], price_factor: 0.9 + Math.random() * 0.3,
+        avail_label: labels[i % labels.length]
+      }));
+    }
+
+    function renderTrains(trains, src, dst, dt) {
+      $('heroSection').style.display    = 'none';
+      $('resultsSection').style.display = 'block';
+      $('resultsTitle').textContent     = `${trains.length} Train${trains.length !== 1 ? 's' : ''} · ${src} → ${dst} · ${formatDate(dt)}`;
+
+      const grid = $('trainsGrid');
+      grid.innerHTML = '';
+
+      if (!trains.length) {
+        grid.innerHTML = `<div class="no-trains"><svg width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg><p>No trains available for this route and date</p></div>`;
+        return;
+      }
+
+      trains.forEach((train, i) => {
+        const card  = document.createElement('div');
+        card.className = 'train-card';
+        card.style.animationDelay = `${i * 0.07}s`;
+
+        const pf    = train.price_factor;
+        const ecoPx = Math.round(3500  * pf);
+        const acsPx = Math.round(6500  * pf);
+        const acbPx = Math.round(13250 * pf);
+
+        let badgeClass = 'available';
+        if (train.avail_label === 'Limited Seats')     badgeClass = 'limited';
+        else if (train.avail_label === 'Booking Open') badgeClass = 'booking-open';
+        const badgeIcon = badgeClass === 'available' ? '🟢' : badgeClass === 'limited' ? '🟡' : '🔵';
+
+        card.innerHTML = `
+          <div class="train-card-header">
+            <div class="train-badge">${train.id}</div>
+            <div class="train-info">
+              <h3>${train.name}</h3>
+              <p class="train-route">${train.source} <span>→</span> ${train.destination}</p>
+            </div>
+            <div class="train-time">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+              ${train.time}
+            </div>
+          </div>
+          <div style="margin-bottom:14px;">
+            <span class="avail-badge ${badgeClass}">${badgeIcon} ${train.avail_label}</span>
+          </div>
+          <div class="train-prices">
+            <div class="price-chip"><span>Economy</span><strong>Rs. ${ecoPx.toLocaleString()}</strong></div>
+            <div class="price-chip"><span>AC Standard</span><strong>Rs. ${acsPx.toLocaleString()}</strong></div>
+            <div class="price-chip price-chip--gold"><span>AC Business</span><strong>Rs. ${acbPx.toLocaleString()}</strong></div>
+          </div>
+          <button class="btn-book" data-id="${train.id}" data-name="${train.name}" data-factor="${pf}" data-time="${train.time}">Book Now</button>
+        `;
+        grid.appendChild(card);
+      });
+
+      document.querySelectorAll('.btn-book').forEach(btn => {
+        btn.addEventListener('click', () => {
+          selectedTrain = {
+            id:     parseInt(btn.dataset.id),
+            name:   btn.dataset.name,
+            factor: parseFloat(btn.dataset.factor),
+            time:   btn.dataset.time
+          };
+          openBookingModal();
+        });
+      });
+    }
+
+    $('btnBack').addEventListener('click', () => {
+      $('heroSection').style.display    = 'flex';
+      $('resultsSection').style.display = 'none';
+    });
+
+    /* ════════════════════════════════════════════════════
+       BOOKING MODAL
+    ════════════════════════════════════════════════════ */
+    function openBookingModal() {
+      $('modalTrainName').textContent = selectedTrain.name;
+      $('pName').value = $('pCnic').value = $('pPhone').value = $('pCard').value = $('pMpin').value = '';
+      $('pType').value  = 'Adult';
+      $('pClass').value = 'AC Business';
+      currentSeatLabel   = '';
+      confirmedBookingId = null;
+      updateFare();
+      goToStep(1);
+      loadSeatLayout();
+      $('bookingModal').style.display = 'flex';
+    }
+
+    $('modalClose').addEventListener('click',  () => $('bookingModal').style.display = 'none');
+    $('bookingModal').addEventListener('click', e => { if (e.target === $('bookingModal')) $('bookingModal').style.display = 'none'; });
+
+    function goToStep(n) {
+      [1,2,3].forEach(i => {
+        $(`step${i}`).classList.toggle('active', i === n);
+        const dot = $(`stepDot${i}`);
+        dot.classList.remove('active','done');
+        if (i === n) dot.classList.add('active');
+        else if (i < n) dot.classList.add('done');
+      });
+      [1,2].forEach(i => $(`stepLine${i}`).classList.toggle('done', i < n));
+    }
+
+    /* ════════════════════════════════════════════════════
+       SEAT LAYOUT
+    ════════════════════════════════════════════════════ */
+    async function loadSeatLayout() {
+      const cls = $('pClass').value;
+      $('coachTabs').innerHTML  = '';
+      $('cabinsGrid').innerHTML = '<div class="seat-loading">Loading seat layout…</div>';
+      currentSeatLabel          = '';
+      updateSelectedSeatDisplay();
+
+      const localBooked = getBookedSeats(selectedTrain.id, cls, travelDateGlobal);
+
+      let cabins = null;
+      try {
+        const res  = await fetch(`${API}/get-seats?train_id=${selectedTrain.id}&selected_class=${encodeURIComponent(cls)}&travel_date=${travelDateGlobal}`);
+        const data = await res.json();
+        cabins = data.cabins;
+      } catch { /* generate mock seats */ }
+
+      if (!cabins) {
+        cabins = generateMockSeats(cls);
+      }
+
+      cabins.forEach(cabin => {
+        cabin.berths.forEach(berth => {
+          if (localBooked.includes(berth.label)) {
+            berth.available = false;
+          }
+        });
+      });
+
+      seatData = {};
+      cabins.forEach(cabin => {
+        if (!seatData[cabin.coach]) seatData[cabin.coach] = [];
+        seatData[cabin.coach].push(cabin);
+      });
+
+      const coaches = Object.keys(seatData);
+      activeCoach   = coaches[0] || '';
+      coaches.forEach(coach => {
+        const btn = document.createElement('button');
+        btn.className = 'coach-tab' + (coach === activeCoach ? ' active' : '');
+        btn.textContent = `Coach ${coach}`;
+        btn.addEventListener('click', () => {
+          activeCoach = coach;
+          document.querySelectorAll('.coach-tab').forEach(b => b.classList.remove('active'));
+          btn.classList.add('active');
+          renderCabins();
+        });
+        $('coachTabs').appendChild(btn);
+      });
+      renderCabins();
+    }
+
+    function generateMockSeats(cls) {
+      const coachCount = cls === 'AC Business' ? 2 : cls === 'AC Standard' ? 3 : 4;
+      const cabinCount = 4;
+      const berthNames = ['Lower', 'Upper', 'Side Lower', 'Side Upper'];
+      const cabins     = [];
+
+      for (let c = 1; c <= coachCount; c++) {
+        for (let cb = 1; cb <= cabinCount; cb++) {
+          const berths = berthNames.map(b => {
+            const label = `${c}-${cb}-${b}`;
+            return {
+              berth: b,
+              label,
+              available: Math.random() > 0.3
+            };
+          });
+          cabins.push({ coach: String(c), cabin: String(cb), berths });
+        }
+      }
+      return cabins;
+    }
+
+    function renderCabins() {
+      const cabins = seatData[activeCoach] || [];
+      const grid   = $('cabinsGrid');
+      grid.innerHTML = '';
+
+      cabins.forEach(cabin => {
+        const card = document.createElement('div');
+        card.className = 'cabin-card';
+
+        const header = document.createElement('div');
+        header.className   = 'cabin-header';
+        header.textContent = `Coach ${activeCoach} · Cabin ${cabin.cabin}`;
+        card.appendChild(header);
+
+        const berthsDiv = document.createElement('div');
+        berthsDiv.className = 'cabin-berths';
+
+        cabin.berths.forEach(berth => {
+          const btn = document.createElement('button');
+          btn.className   = 'berth-btn';
+          btn.textContent = berth.berth;
+          btn.title       = berth.label;
+
+          if (!berth.available) {
+            btn.classList.add('unavailable');
+            btn.disabled = true;
+          } else if (berth.label === currentSeatLabel) {
+            btn.classList.add('selected');
+          }
+
+          btn.addEventListener('click', () => {
+            if (!berth.available) return;
+            currentSeatLabel = berth.label;
+            updateSelectedSeatDisplay();
+            renderCabins();
+          });
+          berthsDiv.appendChild(btn);
+        });
+
+        card.appendChild(berthsDiv);
+        grid.appendChild(card);
+      });
+    }
+
+    function updateSelectedSeatDisplay() {
+      const el = $('selectedSeatText');
+      if (currentSeatLabel) {
+        const parts = currentSeatLabel.split('-');
+        el.textContent = `Selected: Coach ${parts[0]} · Cabin ${parts[1]} · ${parts.slice(2).join(' ')}`;
+        $('selectedSeatDisplay').style.borderColor = 'rgba(200,151,42,0.6)';
+        $('selectedSeatDisplay').style.background  = 'rgba(200,151,42,0.12)';
+      } else {
+        el.textContent = 'No seat selected — tap a green berth above';
+        $('selectedSeatDisplay').style.borderColor = 'rgba(200,151,42,0.3)';
+        $('selectedSeatDisplay').style.background  = 'rgba(200,151,42,0.08)';
+      }
+    }
+
+    $('pClass').addEventListener('change', () => { updateFare(); loadSeatLayout(); });
+    $('pType').addEventListener('change', updateFare);
+
+    function calcFare() {
+      if (!selectedTrain) return { base:0, total:0 };
+      let base = BASE_PRICES[$('pClass').value] * selectedTrain.factor;
+      if ($('pType').value === 'Child') base /= 2;
+      base = Math.round(base);
+      return { base, total: base + RABTA_CHARGE };
+    }
+
+    function updateFare() {
+      const { base, total } = calcFare();
+      $('fareBase').textContent  = `Rs. ${base.toLocaleString()}`;
+      $('fareTotal').textContent = `Rs. ${total.toLocaleString()}`;
+      $('payAmount').textContent = `Rs. ${total.toLocaleString()}`;
+    }
+
+    /* ════════════════════════════════════════════════════
+       PROCEED TO PAYMENT
+    ════════════════════════════════════════════════════ */
+    $('btnProceedToPayment').addEventListener('click', () => {
+      const name  = $('pName').value.trim();
+      const cnic  = $('pCnic').value.trim();
+      const phone = $('pPhone').value.trim();
+      if (!name || !cnic || !phone) { showToast('Please fill all passenger details', 'error'); return; }
+      if (!currentSeatLabel)        { showToast('Please select a seat first', 'error'); return; }
+      updateFare();
+      goToStep(2);
+    });
+
+    /* ════════════════════════════════════════════════════
+       PAYMENT & BOOKING CONFIRM
+    ════════════════════════════════════════════════════ */
+    $('btnPay').addEventListener('click', async () => {
+      const card = $('pCard').value.trim();
+      const mpin = $('pMpin').value.trim();
+      if (!card || card.length !== 4) { showToast('Enter valid 4-digit card number', 'error'); return; }
+      if (!mpin || mpin.length !== 6) { showToast('Enter valid 6-digit MPIN', 'error'); return; }
+
+      $('payBtnWrapper').style.display = 'none';
+      $('processingOverlay').classList.add('active');
+
+      const { total } = calcFare();
+      const pnr = 'PR' + Date.now().toString().slice(-8);
+      const bookingId = 'BK' + Date.now();
+
+      const payload = {
+        passenger_name:   $('pName').value.trim(),
+        passenger_cnic:   $('pCnic').value.trim(),
+        passenger_phone:  $('pPhone').value.trim(),
+        passenger_type:   $('pType').value,
+        train_id:         selectedTrain.id,
+        train_name:       selectedTrain.name,
+        travel_date:      travelDateGlobal,
+        selected_class:   $('pClass').value,
+        seat_label:       currentSeatLabel,
+        card_digits:      card,
+        user_source:      userSource,
+        user_destination: userDestination,
+        user_email:       loggedInUser,
+        total,
+        pnr,
+      };
+
+      await new Promise(r => setTimeout(r, 2200));
+
+      let confirmed  = false;
+      let serverPnr  = pnr;
+      let serverTotal = total;
+      let serverId   = bookingId;
+
+      try {
+        const res  = await fetch(`${API}/confirm-booking`, {
+          method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(payload)
+        });
+        const data = await res.json();
+        if (res.ok) {
+          confirmed  = true;
+          serverPnr  = data.pnr   || pnr;
+          serverTotal = data.total || total;
+          serverId   = data.booking_id || bookingId;
+        }
+      } catch { /* fall through to local */ }
+
+      $('processingOverlay').classList.remove('active');
+      $('payBtnWrapper').style.display = '';
+
+      const localBooking = {
+        id:             serverId,
+        pnr:            serverPnr,
+        train_id:       selectedTrain.id,
+        train_name:     selectedTrain.name,
+        train_time:     selectedTrain.time,
+        route:          `${userSource} → ${userDestination}`,
+        passenger_name: payload.passenger_name,
+        passenger_cnic: payload.passenger_cnic,
+        passenger_phone:payload.passenger_phone,
+        passenger_type: payload.passenger_type,
+        travel_date:    travelDateGlobal,
+        selected_class: payload.selected_class,
+        seat:           currentSeatLabel,
+        total:          serverTotal,
+        user_email:     loggedInUser,
+        booked_at:      new Date().toISOString(),
+      };
+
+      const allBookings = getAllBookings();
+      allBookings.push(localBooking);
+      saveAllBookings(allBookings);
+
+      addBookedSeat(selectedTrain.id, payload.selected_class, travelDateGlobal, currentSeatLabel);
+
+      confirmedBookingId = serverId;
+      $('successPnr').textContent   = `PNR: ${serverPnr}`;
+      $('successTotal').textContent = `Rs. ${serverTotal.toLocaleString()}`;
+      goToStep(3);
+
+      markSeatBookedInMemory(currentSeatLabel);
+    });
+
+    function markSeatBookedInMemory(seatLabel) {
+      for (const coach of Object.values(seatData)) {
+        for (const cabin of coach) {
+          for (const berth of cabin.berths) {
+            if (berth.label === seatLabel) berth.available = false;
+          }
+        }
+      }
+    }
+
+    /* ════════════════════════════════════════════════════
+       DOWNLOAD TICKET
+    ════════════════════════════════════════════════════ */
+    $('btnGenerateTicket').addEventListener('click', () => {
+      if (!isLoggedIn) { showLoginRequired(); return; }
+      if (!confirmedBookingId) { showToast('No booking found', 'error'); return; }
+
+      const backendUrl = `${API}/download-ticket/${confirmedBookingId}`;
+      fetch(backendUrl, { method:'HEAD' }).then(r => {
+        if (r.ok) { window.open(backendUrl, '_blank'); }
+        else { generateLocalTicket(); }
+      }).catch(() => generateLocalTicket());
+
+      $('bookingModal').style.display = 'none';
+    });
+
+    function generateLocalTicket() {
+      const all     = getAllBookings();
+      const booking = all.find(b => b.id === confirmedBookingId);
+      if (!booking) { showToast('Ticket data not found', 'error'); return; }
+
+      const html = buildTicketHtml(booking, userSource || booking.route.split(' → ')[0], userDestination || booking.route.split(' → ')[1]);
+      const blob = new Blob([html], { type: 'text/html' });
+      window.open(URL.createObjectURL(blob), '_blank');
+    }
+
+    /* ════════════════════════════════════════════════════
+       BOOKED TICKETS MODAL
+    ════════════════════════════════════════════════════ */
+    $('btnShowBookings').addEventListener('click', loadBookings);
+    $('bookingsModalClose').addEventListener('click', () => $('bookingsModal').style.display = 'none');
+    $('bookingsModal').addEventListener('click', e => { if (e.target === $('bookingsModal')) $('bookingsModal').style.display = 'none'; });
+
+    async function loadBookings() {
+      if (!isLoggedIn) { showLoginRequired(); return; }
+
+      $('bookingsModal').style.display = 'flex';
+      $('bookingsList').innerHTML = '<p class="loading-text">Loading tickets…</p>';
+
+      let data = null;
+      try {
+        const res = await fetch(`${API}/get-all-bookings`);
+        if (res.ok) {
+          const all = await res.json();
+          data = all.filter(b => b.user_email === loggedInUser);
+        }
+      } catch { /* use localStorage */ }
+
+      if (!data) {
+        const all = getAllBookings();
+        data = all.filter(b => b.user_email === loggedInUser);
+      } else {
+        const serverIds  = new Set(data.map(b => b.id));
+        const localExtra = getAllBookings().filter(b => b.user_email === loggedInUser && !serverIds.has(b.id));
+        data = [...localExtra, ...data];
+      }
+
+      if (!data.length) {
+        $('bookingsList').innerHTML = `
+          <div class="empty-bookings">
+            <svg width="52" height="52" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
+            <p>No tickets booked yet for <strong>${loggedInUser}</strong></p>
+          </div>`;
+        return;
+      }
+
+      data.sort((a, b) => (b.booked_at || '').localeCompare(a.booked_at || ''));
+
+      $('bookingsList').innerHTML = data.map(b => `
+        <div class="booking-card">
+          <div class="booking-top">
+            <div>
+              <h4>${b.train_name || 'Train'}</h4>
+              <p class="booking-route">${b.route || '—'}</p>
+            </div>
+            <div class="booking-pnr">PNR: ${b.pnr}</div>
+          </div>
+          <div class="booking-details">
+            <div class="booking-detail"><span>Passenger</span><strong>${b.passenger_name}</strong></div>
+            <div class="booking-detail"><span>Date</span><strong>${b.travel_date}</strong></div>
+            <div class="booking-detail"><span>Class</span><strong>${b.selected_class}</strong></div>
+            <div class="booking-detail"><span>Seat</span><strong>${b.seat || b.seat_label || '—'}</strong></div>
+            <div class="booking-detail"><span>Type</span><strong>${b.passenger_type}</strong></div>
+            <div class="booking-detail"><span>Total</span><strong class="booking-total">Rs. ${(b.total || 0).toLocaleString()}</strong></div>
+          </div>
+          <div class="booking-actions">
+            <button class="btn-download" onclick="downloadBookingTicket('${b.id}')">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+              Download Ticket
+            </button>
+            <button class="btn-cancel" onclick="openCancelConfirm('${b.id}', '${b.pnr}')">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+              Cancel
+            </button>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function downloadBookingTicket(bookingId) {
+      const backendUrl = `${API}/download-ticket/${bookingId}`;
+      fetch(backendUrl, { method:'HEAD' }).then(r => {
+        if (r.ok) { window.open(backendUrl, '_blank'); }
+        else { generateTicketById(bookingId); }
+      }).catch(() => generateTicketById(bookingId));
+    }
+
+    function generateTicketById(bookingId) {
+      const booking = getAllBookings().find(b => b.id === bookingId);
+      if (!booking) { showToast('Ticket data not found', 'error'); return; }
+      const routeParts = (booking.route || '→').split(' → ');
+      const html = buildTicketHtml(booking, routeParts[0] || '—', routeParts[1] || '—');
+      const blob = new Blob([html], { type: 'text/html' });
+      window.open(URL.createObjectURL(blob), '_blank');
+    }
+
+    /* ════════════════════════════════════════════════════
+       TICKET HTML BUILDER
+    ════════════════════════════════════════════════════ */
+    function buildTicketHtml(booking, src, dst) {
+      const departureTime = booking.train_time || booking.time || '—';
+
+      return `<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>E-Ticket - ${booking.pnr}</title>
+<style>
+  body { font-family: 'Gill Sans', sans-serif; background: #f4f8f5; margin: 0; padding: 32px; color: #0b1f12; }
+  .ticket { max-width: 680px; margin: 0 auto; background: #fff; border-radius: 16px; overflow: hidden; box-shadow: 0 8px 40px rgba(0,0,0,0.15); }
+  .ticket-header { background: linear-gradient(135deg, #083d1f, #0d6b36); color: #fff; padding: 28px 36px; display: flex; justify-content: space-between; align-items: center; }
+  .ticket-header h1 { font-size: 1.5rem; margin: 0; }
+  .ticket-header p { margin: 4px 0 0; font-size: 0.85rem; opacity: 0.8; }
+  .pnr-badge { background: rgba(200,151,42,0.3); border: 2px solid #c8972a; color: #f5cc55; border-radius: 8px; padding: 8px 18px; text-align: center; }
+  .pnr-badge span { display: block; font-size: 0.65rem; letter-spacing: 2px; text-transform: uppercase; opacity: 0.8; }
+  .pnr-badge strong { font-size: 1.1rem; letter-spacing: 2px; }
+  .route-bar { background: linear-gradient(135deg, #e8f5ee, #f5fef8); padding: 20px 36px; display: flex; align-items: center; gap: 0; border-bottom: 1px solid rgba(13,107,54,0.1); }
+  .station { flex: 1; }
+  .station span { font-size: 0.65rem; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: #6b9478; display: block; }
+  .station strong { font-size: 1.2rem; color: #083d1f; }
+  .route-divider { width: 1px; background: rgba(13,107,54,0.15); height: 40px; margin: 0 24px; flex-shrink: 0; }
+  .departure-col { text-align: right; flex-shrink: 0; }
+  .departure-col span { font-size: 0.65rem; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: #6b9478; display: block; margin-bottom: 4px; }
+  .departure-col strong { font-size: 1.35rem; color: #083d1f; font-weight: 800; letter-spacing: 1px; }
+  .departure-col .dep-icon { display: inline-block; margin-right: 4px; vertical-align: middle; }
+  .details { padding: 24px 36px; display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 18px; }
+  .detail { display: flex; flex-direction: column; gap: 4px; }
+  .detail span { font-size: 0.65rem; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; color: #9cb8a5; }
+  .detail strong { font-size: 0.95rem; font-weight: 700; color: #0b1f12; }
+  .footer { background: #083d1f; color: rgba(255,255,255,0.7); padding: 14px 36px; font-size: 0.78rem; display: flex; justify-content: space-between; }
+  .total-row { background: linear-gradient(135deg, rgba(200,151,42,0.08), rgba(200,151,42,0.14)); border-top: 2px solid rgba(200,151,42,0.3); padding: 16px 36px; display: flex; justify-content: space-between; align-items: center; }
+  .total-row span { font-size: 0.85rem; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: #2e5c3a; }
+  .total-row strong { font-family: 'Gill Sans', sans-serif; font-size: 1.6rem; color: #083d1f; }
+  @media print { body { padding: 0; } }
+</style>
+</head>
+<body>
+<div class="ticket">
+  <div class="ticket-header">
+    <div>
+      <h1 style="display: flex; align-items: center; gap: 15px; margin: 0;">
+      <img src="https://www.ce.com.pk/wp-content/uploads/2022/04/Pakistan-Railway-logo-1.png" alt="Pakistan Railways Logo" style="height: 50px; width: auto;" />
+      Pakistan Railways
+      </h1>
+      <p style="margin-top: 5px; letter-spacing: 2px;">E L E C T R O N I C - T I C K E T</p>
+    </div>
+  <div class="pnr-badge"><span>PNR</span><strong>${booking.pnr}</strong></div>
+</div>
+  <div class="route-bar">
+    <div class="station">
+      <span>From</span>
+      <strong>${src}</strong>
+    </div>
+    <div class="station">
+      <span>To</span>
+      <strong>${dst}</strong>
+    </div>
+    <div class="route-divider"></div>
+    <div class="departure-col">
+      <span>Departure</span>
+      <strong>
+        <svg class="dep-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#c8972a" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>${departureTime}
+      </strong>
+    </div>
+  </div>
+  <div class="details">
+    <div class="detail"><span>Train</span><strong>${booking.train_name}</strong></div>
+    <div class="detail"><span>Date</span><strong>${booking.travel_date}</strong></div>
+    <div class="detail"><span>Class</span><strong>${booking.selected_class}</strong></div>
+    <div class="detail"><span>Seat</span><strong>${booking.seat || '—'}</strong></div>
+    <div class="detail"><span>Passenger</span><strong>${booking.passenger_name}</strong></div>
+    <div class="detail"><span>Type</span><strong>${booking.passenger_type}</strong></div>
+    <div class="detail"><span>CNIC</span><strong>${booking.passenger_cnic}</strong></div>
+    <div class="detail"><span>Phone</span><strong>${booking.passenger_phone}</strong></div>
+    <div class="detail"><span>Booked At</span><strong>${new Date(booking.booked_at).toLocaleString('en-PK')}</strong></div>
+  </div>
+  <div class="total-row">
+    <span>Total Amount Paid</span>
+    <strong>Rs. ${(booking.total || 0).toLocaleString()}</strong>
+    <span>Platform Charges: Rs.10</span>
+  </div>
+  <div class="footer">
+    <span>Pakistan Railways — Official E-Ticket</span>
+    <span>Valid for date of travel only</span>
+  </div>
+</div>
+<script>window.print();<\/script>
+</body>
+</html>`;
+    }
+
+    /* ════════════════════════════════════════════════════
+       HELPERS
+    ════════════════════════════════════════════════════ */
+    function formatDate(dateStr) {
+      const d = new Date(dateStr + 'T00:00:00');
+      return d.toLocaleDateString('en-PK', { day:'numeric', month:'short', year:'numeric' });
+    }
+
+    /* ════════════════════════════════════════════════════
+       GLOBAL ENTER KEY HANDLER
+    ════════════════════════════════════════════════════ */
+    document.addEventListener('keydown', function(e) {
+      if (e.key !== 'Enter') return;
+
+      /* ── 1. Cancel Confirm Modal ── */
+      if (!$('cancelConfirmOverlay').classList.contains('hidden')) {
+        /* Password input ka Enter executeCancelTicket ke through handle hota hai */
+        if (document.activeElement !== $('cancelPasswordInput')) {
+          e.preventDefault();
+          executeCancelTicket();
+        }
+        return;
+      }
+
+      /* ── 2. Search Login Overlay ── */
+      if (!$('searchLoginOverlay').classList.contains('hidden')) {
+        e.preventDefault();
+        $('btnSearchLrLogin').click();
+        return;
+      }
+
+      /* ── 3. Login Required Overlay (ticket download) ── */
+      if (!$('loginRequiredOverlay').classList.contains('hidden')) {
+        e.preventDefault();
+        $('btnLrLogin').click();
+        return;
+      }
+
+      /* ── 4. Date Limit Overlay ── */
+      if (!$('dateLimitOverlay').classList.contains('hidden')) {
+        e.preventDefault();
+        $('btnDateLimitOk').click();
+        return;
+      }
+
+      /* ── 5. Auth/Login Overlay ── */
+      if (!$('loginOverlay').classList.contains('hidden')) {
+        const authInputs = [$('authEmail'), $('authPassword'), $('authConfirmPass'), $('authName')];
+        if (!authInputs.includes(document.activeElement)) {
+          e.preventDefault();
+          handleAuthSubmit();
+        }
+        return;
+      }
+
+      /* ── 6. Booking Modal ── */
+      if ($('bookingModal').style.display === 'flex') {
+        if ($('step1').classList.contains('active')) {
+          const step1Inputs = [$('pName'), $('pCnic'), $('pPhone')];
+          if (!step1Inputs.includes(document.activeElement)) {
+            e.preventDefault();
+            $('btnProceedToPayment').click();
+          }
+          return;
+        }
+        if ($('step2').classList.contains('active')) {
+          const payInputs = [$('pCard'), $('pMpin')];
+          if (!payInputs.includes(document.activeElement)) {
+            e.preventDefault();
+            $('btnPay').click();
+          }
+          return;
+        }
+        if ($('step3').classList.contains('active')) {
+          e.preventDefault();
+          $('btnGenerateTicket').click();
+          return;
+        }
+      }
+
+      /* ── 7. Hero page — Search Trains ── */
+      if ($('heroSection').style.display !== 'none') {
+        const tag = document.activeElement ? document.activeElement.tagName : '';
+        if (tag !== 'INPUT' && tag !== 'TEXTAREA' && tag !== 'SELECT') {
+          e.preventDefault();
+          $('btnSearch').click();
+        }
+      }
+    });
+
+    /* ── Passenger fields: Enter → Proceed to Payment ── */
+    ['pName', 'pCnic', 'pPhone'].forEach(id => {
+      $(id).addEventListener('keydown', function(e) {
+        if (e.key === 'Enter') { e.preventDefault(); $('btnProceedToPayment').click(); }
+      });
+    });
+
+    /* ── Payment fields: Enter → Confirm & Pay ── */
+    ['pCard', 'pMpin'].forEach(id => {
+      $(id).addEventListener('keydown', function(e) {
+        if (e.key === 'Enter') { e.preventDefault(); $('btnPay').click(); }
+      });
+    });
+
+  </script>
+</body>
+</html>
