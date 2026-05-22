@@ -2,7 +2,8 @@ from fastapi import FastAPI, HTTPException, Query, Request
 from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
-from pydantic import BaseModel
+from pydantic import BaseModel, field_validator, model_validator
+import re
 import random
 import hashlib
 from datetime import date, datetime, timedelta
@@ -10,6 +11,7 @@ import asyncpg
 import os
 from contextlib import asynccontextmanager
 from dotenv import load_dotenv
+from typing import Optional, Literal
 
 load_dotenv()
 
@@ -38,8 +40,6 @@ app.mount("/static", StaticFiles(directory="static"), name="static")
 templates = Jinja2Templates(directory="templates")
 
 
-# STATIONS
-
 STATIONS = [
     "Karachi City",
     "Karachi Cantonment",
@@ -61,8 +61,6 @@ STATIONS = [
     "Peshawar City",
     "Quetta",
 ]
-
-# TRAINS
 
 TRAINS = [
     {
@@ -203,8 +201,6 @@ TRAINS = [
     },
 ]
 
-# CLASS / COACH CONFIGURATION
-
 CLASS_CONFIG = {
     "AC Business": {
         "coaches": ["A1", "A2"],
@@ -235,8 +231,15 @@ BASE_CLASS_PRICES = {
 RABTA_CHARGE   = 10
 REFUND_PERCENT = 0.85
 
+PAYMENT_METHODS = Literal["JazzCash", "Easypaisa", "MasterCard", "Visa"]
 
-# BOOKING WINDOW
+PAYMENT_PIN_RULES = {
+    "JazzCash":   {"account_digits": 11, "pin_digits": 4,  "label": "JazzCash Account (11 digits)"},
+    "Easypaisa":  {"account_digits": 11, "pin_digits": 6,  "label": "Easypaisa Account (11 digits)"},
+    "MasterCard": {"account_digits": 4,  "pin_digits": 4,  "label": "MasterCard Last 4 Digits", "cvv": 4},
+    "Visa":       {"account_digits": 4,  "pin_digits": 4,  "label": "Visa Card Last 4 Digits",  "cvv": 4},
+}
+
 
 def _get_booking_window() -> tuple[date, date]:
     today_date = date.today()
@@ -250,8 +253,6 @@ def _get_booking_window() -> tuple[date, date]:
     return today_date, max_date
 
 
-# EXCLUSIVE ROUTE FILTER
-
 EXCLUSIVE_ROUTES: dict[tuple[str, str], set[int]] = {
     ("karachi cantonment", "margala"): {1},
     ("margala", "karachi cantonment"): {7},
@@ -263,8 +264,6 @@ def _is_route_exclusive(source_lower: str, dest_lower: str, train_id: int) -> bo
         return train_id not in EXCLUSIVE_ROUTES[key]
     return False
 
-
-# DYNAMIC AVAILABILITY HELPERS
 
 def _is_train_available(train_id: int, travel_date: date) -> bool:
     if train_id in [1, 7]:
@@ -343,25 +342,160 @@ def _get_seat_availability_layout(
     return seats
 
 
-# MODELS
-
 class BookingData(BaseModel):
-    passenger_name:   str
-    passenger_cnic:   str
-    passenger_phone:  str
-    passenger_type:   str
+    passenger_name:  str
+    passenger_cnic:  str
+    passenger_phone: str
+    passenger_type:  str
+
     train_id:         int
     travel_date:      str
     selected_class:   str
     seat_label:       str
-    card_digits:      str
+
+    payment_method:   str = "Visa"
+    account_number:   str = ""
+    payment_pin:      str = ""
+    cvv:              str = ""
+    card_digits:      str = ""
+
     user_source:      str = ""
     user_destination: str = ""
     email_id:         str = ""
     full_name:        str = ""
 
+    @field_validator("passenger_name")
+    @classmethod
+    def validate_passenger_name(cls, v: str) -> str:
+        v = v.strip()
+        if not v:
+            raise ValueError("Passenger name is required.")
+        if not re.fullmatch(r"[A-Za-z ]{2,60}", v):
+            raise ValueError(
+                "Passenger name must contain only English alphabets and spaces "
+                "(2–60 characters). No numbers or special characters allowed."
+            )
+        return v
 
-# HELPERS
+    @field_validator("passenger_cnic")
+    @classmethod
+    def validate_passenger_cnic(cls, v: str) -> str:
+        v = v.strip()
+        if not re.fullmatch(r"\d{5}-\d{7}-\d", v):
+            raise ValueError(
+                "CNIC must be in the format XXXXX-XXXXXXX-X "
+                "(13 digits with 2 dashes, e.g. 42101-1234567-8)."
+            )
+        return v
+
+    @field_validator("passenger_phone")
+    @classmethod
+    def validate_passenger_phone(cls, v: str) -> str:
+        v = v.strip()
+        if not re.fullmatch(r"0\d{3}-\d{7}", v):
+            raise ValueError(
+                "Phone number must be in Pakistani format: 0XXX-XXXXXXX "
+                "(12 characters including dash, starting with 0, e.g. 0321-1234567)."
+            )
+        return v
+
+    @field_validator("payment_method")
+    @classmethod
+    def validate_payment_method(cls, v: str) -> str:
+        allowed = {"JazzCash", "Easypaisa", "MasterCard", "Visa"}
+        if v not in allowed:
+            raise ValueError(f"Payment method must be one of: {', '.join(sorted(allowed))}.")
+        return v
+
+    @model_validator(mode="after")
+    def validate_payment_fields(self) -> "BookingData":
+        method = self.payment_method
+        acct   = self.account_number.strip()
+        pin    = self.payment_pin.strip()
+        cvv    = self.cvv.strip()
+
+        if method in ("JazzCash", "Easypaisa"):
+            if not re.fullmatch(r"03\d{9}", acct):
+                raise ValueError(
+                    f"{method} account number must be 11 digits starting with 03 "
+                    f"(e.g. 03XXXXXXXXX)."
+                )
+            expected_pin = 4 if method == "JazzCash" else 6
+            if not re.fullmatch(r"\d{" + str(expected_pin) + r"}", pin):
+                raise ValueError(
+                    f"{method} PIN must be exactly {expected_pin} digits."
+                )
+
+        elif method in ("MasterCard", "Visa"):
+            if not re.fullmatch(r"\d{4}", acct):
+                raise ValueError(
+                    f"{method} requires the last 4 digits of your card number."
+                )
+            if not re.fullmatch(r"\d{4}", cvv):
+                raise ValueError(
+                    f"{method} CVV must be exactly 4 digits."
+                )
+            if not re.fullmatch(r"\d{4}", pin):
+                raise ValueError(
+                    f"{method} PIN must be exactly 4 digits."
+                )
+            self.card_digits = acct
+
+        return self
+
+
+class LoginRequest(BaseModel):
+    email: str
+    password: str
+
+    @field_validator("email")
+    @classmethod
+    def validate_email(cls, v: str) -> str:
+        v = v.strip().lower()
+        if not re.fullmatch(r"[^@\s]+@[^@\s]+\.[^@\s]+", v):
+            raise ValueError("Please provide a valid email address.")
+        return v
+
+
+class SignupRequest(BaseModel):
+    email:    str
+    password: str
+    name:     str
+
+    @field_validator("email")
+    @classmethod
+    def validate_email(cls, v: str) -> str:
+        v = v.strip().lower()
+        if not re.fullmatch(r"[^@\s]+@[^@\s]+\.[^@\s]+", v):
+            raise ValueError("Please provide a valid email address.")
+        return v
+
+    @field_validator("name")
+    @classmethod
+    def validate_name(cls, v: str) -> str:
+        v = v.strip()
+        if not re.fullmatch(r"[A-Za-z ]{2,60}", v):
+            raise ValueError(
+                "Full name must contain only English alphabets and spaces (2–60 characters)."
+            )
+        return v
+
+    @field_validator("password")
+    @classmethod
+    def validate_password(cls, v: str) -> str:
+        errors = []
+        if len(v) < 8:
+            errors.append("at least 8 characters")
+        if not re.search(r"[A-Z]", v):
+            errors.append("one uppercase letter")
+        if not re.search(r"[0-9]", v):
+            errors.append("one number")
+        if not re.search(r"[!@#$%^&*()\-_=+\[\]{};':\"\\|,.<>/?`~]", v):
+            errors.append("one special character")
+        if errors:
+            raise ValueError("Password must contain: " + ", ".join(errors) + ".")
+        return v
+
 
 def _validate_future_date(travel_date: str) -> date:
     try:
@@ -405,8 +539,6 @@ def _calc_refund(total: float) -> float:
     return round(total * REFUND_PERCENT, 2)
 
 
-# DB HELPERS
-
 async def _upsert_user(conn, email: str, full_name: str, phone: str):
     await conn.execute(
         """
@@ -423,20 +555,43 @@ async def _upsert_user(conn, email: str, full_name: str, phone: str):
     )
 
 
-async def _insert_payment(conn, email: str, booking_id: str, amount: float, card_digits: str):
+async def _insert_payment(
+    conn,
+    email: str,
+    booking_id: str,
+    amount: float,
+    payment_method: str,
+    account_number: str,
+    cvv: str = "",
+):
     transaction_id = f"TXN-{random.randint(10000000, 99999999)}"
-    card_last4     = (card_digits or "")[-4:] or "0000"
+
+    # ── Method-specific field mapping ──────────────────────────────
+    # JazzCash / Easypaisa  → mobile_number stored, card fields NULL
+    # Visa / MasterCard     → card_last4 + hashed CVV stored, mobile NULL
+    if payment_method in ("JazzCash", "Easypaisa"):
+        mobile_number = account_number          # 11-digit mobile
+        card_last4    = None
+        card_cvv_hash = None
+    else:
+        mobile_number = None
+        card_last4    = account_number[-4:]     # last 4 digits of card
+        card_cvv_hash = hashlib.sha256(cvv.encode()).hexdigest() if cvv else None
+
     await conn.execute(
         """
         INSERT INTO payment_records (
             email_id, booking_id, amount,
-            payment_method, transaction_id, card_last4, status
-        ) VALUES ($1, $2, $3, 'Card', $4, $5, 'SUCCESS')
+            payment_method, transaction_id,
+            mobile_number, card_last4, card_cvv_hash,
+            status
+        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, 'SUCCESS')
         """,
-        email, booking_id, amount, transaction_id, card_last4,
+        email, booking_id, amount,
+        payment_method, transaction_id,
+        mobile_number, card_last4, card_cvv_hash,
     )
 
-# ROUTES
 
 @app.get("/", response_class=HTMLResponse)
 async def serve_frontend(request: Request):
@@ -455,6 +610,62 @@ def get_booking_window():
         "today":            today_date.isoformat(),
         "max_date":         max_date.isoformat(),
         "max_date_display": max_date.strftime("%d %b %Y"),
+    }
+
+
+@app.get("/get-payment-methods")
+def get_payment_methods():
+    return {
+        "methods": [
+            {
+                "id":              "JazzCash",
+                "label":           "JazzCash",
+                "account_label":   "JazzCash Mobile Number (11 digits)",
+                "account_digits":  11,
+                "pin_label":       "JazzCash MPIN (4 digits)",
+                "pin_digits":      4,
+                "requires_cvv":    False,
+                "placeholder_acct":"03XXXXXXXXX",
+                "placeholder_pin": "XXXX",
+            },
+            {
+                "id":              "Easypaisa",
+                "label":           "Easypaisa",
+                "account_label":   "Easypaisa Mobile Number (11 digits)",
+                "account_digits":  11,
+                "pin_label":       "Easypaisa MPIN (6 digits)",
+                "pin_digits":      6,
+                "requires_cvv":    False,
+                "placeholder_acct":"03XXXXXXXXX",
+                "placeholder_pin": "XXXXXX",
+            },
+            {
+                "id":              "MasterCard",
+                "label":           "Master Card",
+                "account_label":   "Last 4 Digits of Card",
+                "account_digits":  4,
+                "pin_label":       "Card PIN (4 digits)",
+                "pin_digits":      4,
+                "requires_cvv":    True,
+                "cvv_digits":      4,
+                "placeholder_acct":"XXXX",
+                "placeholder_pin": "XXXX",
+                "placeholder_cvv": "XXXX",
+            },
+            {
+                "id":              "Visa",
+                "label":           "Visa Card",
+                "account_label":   "Last 4 Digits of Card",
+                "account_digits":  4,
+                "pin_label":       "Card PIN (4 digits)",
+                "pin_digits":      4,
+                "requires_cvv":    True,
+                "cvv_digits":      4,
+                "placeholder_acct":"XXXX",
+                "placeholder_pin": "XXXX",
+                "placeholder_cvv": "XXXX",
+            },
+        ]
     }
 
 
@@ -620,7 +831,15 @@ async def confirm_booking(data: BookingData):
                 coach, data.seat_label, email,
             )
 
-            await _insert_payment(conn, email, booking_id, total, data.card_digits)
+            await _insert_payment(
+                conn,
+                email=email,
+                booking_id=booking_id,
+                amount=total,
+                payment_method=data.payment_method,
+                account_number=data.account_number,
+                cvv=data.cvv,
+            )
 
     return {"status": "success", "booking_id": booking_id, "pnr": pnr, "total": total}
 
@@ -731,59 +950,72 @@ async def update_booking(booking_id: str, data: BookingData):
                 booking_id,
             )
 
-            await _insert_payment(conn, email, booking_id, total, data.card_digits)
+            await _insert_payment(
+                conn,
+                email=email,
+                booking_id=booking_id,
+                amount=total,
+                payment_method=data.payment_method,
+                account_number=data.account_number,
+                cvv=data.cvv,
+            )
 
     return {"msg": "Ticket updated successfully.", "total": total}
 
 
 @app.delete("/delete-booking/{booking_id}")
 async def delete_booking(booking_id: str):
-    async with db_pool.acquire() as conn:
-        b = await conn.fetchrow(
-            "SELECT * FROM bookings WHERE booking_id = $1", booking_id
-        )
-        if not b:
-            raise HTTPException(status_code=404, detail="Booking not found.")
-
-        b = dict(b)
-
-        total_amount    = float(b["total"])
-        refunded_amount = _calc_refund(total_amount)
-
-        async with conn.transaction():
-            await conn.execute(
-                """
-                UPDATE seat_availability
-                SET is_booked = FALSE, booked_by_email = NULL, booked_at = NULL
-                WHERE train_id = $1 AND travel_date = $2
-                  AND coach = $3 AND seat_number = $4
-                """,
-                b["train_id"], b["travel_date"], b["coach"], b["seat_label"]
+    try:
+        async with db_pool.acquire() as conn:
+            b = await conn.fetchrow(
+                "SELECT * FROM bookings WHERE booking_id = $1 AND status = 'CONFIRMED'",
+                booking_id
             )
+            if not b:
+                raise HTTPException(status_code=404, detail="Booking not found or already cancelled.")
 
-            await conn.execute(
-                """
-                INSERT INTO cancellations (
-                    email_id, booking_id, pnr,
-                    total_amount, reason
-                ) VALUES ($1, $2, $3, $4, 'User requested cancellation')
-                """,
-                b["email_id"], b["booking_id"], b["pnr"],
-                total_amount,
-            )
+            b = dict(b)
+            total_amount    = float(b["total"])
+            refunded_amount = _calc_refund(total_amount)
 
-            await conn.execute(
-                """
-                UPDATE bookings
-                SET status = 'CANCELLED', cancellation_date = NOW(), updated_at = NOW()
-                WHERE booking_id = $1
-                """,
-                booking_id,
-            )
+            async with conn.transaction():
+                await conn.execute(
+                    """
+                    UPDATE seat_availability
+                    SET is_booked = FALSE,
+                        booked_by_email = NULL,
+                        booked_at = NULL
+                    WHERE train_id = $1
+                      AND travel_date = $2
+                      AND coach = $3
+                      AND seat_number = $4
+                    """,
+                    b["train_id"], b["travel_date"], b["coach"], b["seat_label"]
+                )
 
-    return {
-        "msg":             "Ticket cancelled. Refund will be processed within 4-5 business days.",
-        "total_paid":      total_amount,
-        "refunded_amount": refunded_amount,
-        "refund_percent":  "85%",
-    }
+                await conn.execute(
+                    """
+                    INSERT INTO cancellations (
+                        email_id, booking_id, pnr,
+                        total_amount, reason
+                    ) VALUES ($1, $2, $3, $4, 'User requested cancellation')
+                    """,
+                    b["email_id"], b["booking_id"], b["pnr"], total_amount
+                )
+
+                await conn.execute(
+                    "DELETE FROM bookings WHERE booking_id = $1",
+                    booking_id
+                )
+
+            return {
+                "msg":             "Ticket cancelled successfully. Record moved to cancellations.",
+                "total_paid":      total_amount,
+                "refunded_amount": refunded_amount,
+                "refund_percent":  "85%",
+            }
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Cancellation failed: {str(e)}")
