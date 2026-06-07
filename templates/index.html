@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Pakistan Railways</title>
   <link rel="icon" href="https://www.ce.com.pk/wp-content/uploads/2022/04/Pakistan-Railway-logo-1.png" type="image/jpeg">
-  <link rel="stylesheet" href="../static/style.css"/>
+  <link rel="stylesheet" href="/static/style.css" />
   <style>
     .pm-label { display:block; font-size:0.82rem; font-weight:700; color:#4a7a56; margin-bottom:8px; letter-spacing:0.3px; }
     .pm-grid { display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:16px; }
@@ -20,11 +20,22 @@
     .field-hint { display:block; font-size:0.7rem; color:#8aaa94; margin-top:3px; }
     #pmFields .payment-grid { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
     #pmFields .payment-grid.single { grid-template-columns:1fr; }
+
+    /* Eye toggle styles */
+    .pass-input-wrap { position:relative; display:flex; align-items:center; }
+    .pass-input-wrap input { width:100%; padding-right:40px; }
+    .eye-btn {
+      position:absolute; right:10px; top:50%; transform:translateY(-50%);
+      background:none; border:none; cursor:pointer; padding:4px;
+      color:#6b9478; display:flex; align-items:center; justify-content:center;
+      transition:color 0.18s;
+    }
+    .eye-btn:hover { color:#094d27; }
+    .eye-btn svg { width:18px; height:18px; pointer-events:none; }
   </style>
 </head>
 <body>
 
-  <!-- NAVBAR -->
   <nav id="navbar">
     <div class="nav-brand">
       <div class="nav-logo">
@@ -86,7 +97,12 @@
       </div>
       <div class="login-field">
         <label>Password / پاس ورڈ</label>
-        <input type="password" id="authPassword" placeholder="••••••••" />
+        <div class="pass-input-wrap">
+          <input type="password" id="authPassword" placeholder="••••••••" />
+          <button type="button" class="eye-btn" onclick="toggleEye('authPassword', this)" tabindex="-1" aria-label="Show/hide password">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="eye-icon"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+          </button>
+        </div>
         <div id="signupStrengthWrap" style="display:none;">
           <div class="password-strength-bar">
             <div class="psb-seg" id="psb1"></div>
@@ -105,7 +121,12 @@
       </div>
       <div class="login-field confirm-pass-field hidden" id="fieldConfirm">
         <label>Confirm Password / پاس ورڈ تصدیق</label>
-        <input type="password" id="authConfirmPass" placeholder="••••••••" />
+        <div class="pass-input-wrap">
+          <input type="password" id="authConfirmPass" placeholder="••••••••" />
+          <button type="button" class="eye-btn" onclick="toggleEye('authConfirmPass', this)" tabindex="-1" aria-label="Show/hide password">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="eye-icon"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+          </button>
+        </div>
         <div class="pass-match-hint" id="passMatchHint"></div>
       </div>
       <button class="btn-login-submit" id="btnAuthSubmit">Login / لاگ ان</button>
@@ -115,7 +136,7 @@
     </div>
   </div>
 
-  <!-- LOGIN REQUIRED POPUP (ticket download) -->
+  <!-- LOGIN REQUIRED POPUP -->
   <div class="login-required-overlay hidden" id="loginRequiredOverlay">
     <div class="login-required-box">
       <div class="lr-icon">
@@ -132,7 +153,7 @@
     </div>
   </div>
 
-  <!-- LOGIN REQUIRED FOR SEARCH POPUP -->
+  <!-- LOGIN REQUIRED FOR SEARCH -->
   <div class="login-required-overlay hidden" id="searchLoginOverlay" style="z-index:9999;">
     <div class="login-required-box" style="border:1px solid rgba(200,151,42,0.3);max-width:420px;">
       <div class="lr-icon" style="color:#946a00;background:#EEE6D0;border:1px solid rgba(200,151,42,0.3);">
@@ -150,7 +171,7 @@
     </div>
   </div>
 
-  <!-- DATE LIMIT ERROR POPUP -->
+  <!-- DATE LIMIT ERROR -->
   <div class="login-required-overlay hidden" id="dateLimitOverlay" style="z-index:9999;">
     <div class="login-required-box" style="border-top:4px solid #e53e3e;max-width:440px;">
       <div class="lr-icon" style="color:#e53e3e;background:rgba(229,62,62,0.1);border-color:rgba(229,62,62,0.3);">
@@ -271,20 +292,11 @@
       </div>
       <div class="modal-body">
         <div class="step-indicator">
-          <div class="step-dot active" id="stepDot1">
-            <div class="step-dot-circle">1</div>
-            <span class="step-dot-label">Passenger</span>
-          </div>
+          <div class="step-dot active" id="stepDot1"><div class="step-dot-circle">1</div><span class="step-dot-label">Passenger</span></div>
           <div class="step-line" id="stepLine1"></div>
-          <div class="step-dot" id="stepDot2">
-            <div class="step-dot-circle">2</div>
-            <span class="step-dot-label">Payment</span>
-          </div>
+          <div class="step-dot" id="stepDot2"><div class="step-dot-circle">2</div><span class="step-dot-label">Payment</span></div>
           <div class="step-line" id="stepLine2"></div>
-          <div class="step-dot" id="stepDot3">
-            <div class="step-dot-circle">3</div>
-            <span class="step-dot-label">Confirmed</span>
-          </div>
+          <div class="step-dot" id="stepDot3"><div class="step-dot-circle">3</div><span class="step-dot-label">Confirmed</span></div>
         </div>
 
         <!-- STEP 1 -->
@@ -292,20 +304,17 @@
           <div class="modal-grid">
             <div class="field-group-modal">
               <label>Passenger Name / نام</label>
-              <input type="text" id="pName" placeholder="Full name as on CNIC" maxlength="60"
-                oninput="this.value=this.value.replace(/[^A-Za-z ]/g,'')" />
+              <input type="text" id="pName" placeholder="Full name as on CNIC" maxlength="60" oninput="this.value=this.value.replace(/[^A-Za-z ]/g,'')" />
               <span class="field-hint">Only alphabets — no numbers or symbols</span>
             </div>
             <div class="field-group-modal">
               <label>CNIC Number / شناخت نمبر</label>
-              <input type="text" id="pCnic" placeholder="XXXXX-XXXXXXX-X" maxlength="15"
-                oninput="autoFormatCnic(this)" />
+              <input type="text" id="pCnic" placeholder="XXXXX-XXXXXXX-X" maxlength="15" oninput="autoFormatCnic(this)" />
               <span class="field-hint">Format: XXXXX-XXXXXXX-X</span>
             </div>
             <div class="field-group-modal">
               <label>Phone Number / فون</label>
-              <input type="text" id="pPhone" placeholder="03XX-XXXXXXX" maxlength="12"
-                oninput="autoFormatPhone(this)" />
+              <input type="text" id="pPhone" placeholder="03XX-XXXXXXX" maxlength="12" oninput="autoFormatPhone(this)" />
               <span class="field-hint">03XX-XXXXXXX (starts with 0)</span>
             </div>
             <div class="field-group-modal">
@@ -369,29 +378,17 @@
             <label class="pm-label">Payment Method / ادائیگی کا طریقہ</label>
             <div class="pm-grid" id="pmGrid">
               <button type="button" class="pm-btn active" data-method="JazzCash" onclick="selectPM('JazzCash')">
-                <svg viewBox="0 0 100 34" width="72" height="24" xmlns="http://www.w3.org/2000/svg">
-                  <rect width="100" height="34" rx="5" fill="#d42020"/>
-                  <text x="50" y="23" text-anchor="middle" font-family="Arial Black,Arial" font-weight="900" font-size="15" fill="#fff">JazzCash</text>
-                </svg>
+                <svg viewBox="0 0 100 34" width="72" height="24" xmlns="http://www.w3.org/2000/svg"><rect width="100" height="34" rx="5" fill="#d42020"/><text x="50" y="23" text-anchor="middle" font-family="Arial Black,Arial" font-weight="900" font-size="15" fill="#fff">JazzCash</text></svg>
               </button>
               <button type="button" class="pm-btn" data-method="Easypaisa" onclick="selectPM('Easypaisa')">
-                <svg viewBox="0 0 110 34" width="80" height="24" xmlns="http://www.w3.org/2000/svg">
-                  <rect width="110" height="34" rx="5" fill="#1e8b3c"/>
-                  <text x="55" y="23" text-anchor="middle" font-family="Arial Black,Arial" font-weight="900" font-size="13" fill="#fff">easypaisa</text>
-                </svg>
+                <svg viewBox="0 0 110 34" width="80" height="24" xmlns="http://www.w3.org/2000/svg"><rect width="110" height="34" rx="5" fill="#1e8b3c"/><text x="55" y="23" text-anchor="middle" font-family="Arial Black,Arial" font-weight="900" font-size="13" fill="#fff">easypaisa</text></svg>
               </button>
               <button type="button" class="pm-btn" data-method="MasterCard" onclick="selectPM('MasterCard')">
-                <svg viewBox="0 0 52 32" width="44" height="28" xmlns="http://www.w3.org/2000/svg">
-                  <circle cx="19" cy="16" r="14" fill="#eb001b"/>
-                  <circle cx="33" cy="16" r="14" fill="#f79e1b"/>
-                  <path d="M26 5.8a14 14 0 0 1 0 20.4A14 14 0 0 1 26 5.8z" fill="#ff5f00"/>
-                </svg>
+                <svg viewBox="0 0 52 32" width="44" height="28" xmlns="http://www.w3.org/2000/svg"><circle cx="19" cy="16" r="14" fill="#eb001b"/><circle cx="33" cy="16" r="14" fill="#f79e1b"/><path d="M26 5.8a14 14 0 0 1 0 20.4A14 14 0 0 1 26 5.8z" fill="#ff5f00"/></svg>
                 <span style="font-size:0.68rem;font-weight:800;color:#333;line-height:1.1;">Master<br/>Card</span>
               </button>
               <button type="button" class="pm-btn" data-method="Visa" onclick="selectPM('Visa')">
-                <svg viewBox="0 0 70 24" width="60" height="20" xmlns="http://www.w3.org/2000/svg">
-                  <text x="35" y="21" text-anchor="middle" font-family="'Times New Roman',Georgia,serif" font-weight="900" font-size="24" fill="#1a1f71" letter-spacing="-1">VISA</text>
-                </svg>
+                <svg viewBox="0 0 70 24" width="60" height="20" xmlns="http://www.w3.org/2000/svg"><text x="35" y="21" text-anchor="middle" font-family="'Times New Roman',Georgia,serif" font-weight="900" font-size="24" fill="#1a1f71" letter-spacing="-1">VISA</text></svg>
               </button>
             </div>
             <div id="pmFields"></div>
@@ -424,7 +421,6 @@
             </button>
           </div>
         </div>
-
       </div>
     </div>
   </div>
@@ -445,227 +441,150 @@
   <div class="toast" id="toast"></div>
 
   <script>
-    /* ════════════════════════════════════════════════════
-       CORE CONFIG
-    ════════════════════════════════════════════════════ */
     const API          = '';
     const BASE_PRICES  = { 'AC Business': 13250, 'AC Standard': 6500, 'Economy': 3500 };
     const RABTA_CHARGE = 10;
+    const $            = id => document.getElementById(id);
 
-    const $ = id => document.getElementById(id);
+    /* --- Eye Toggle --- */
+    function toggleEye(inputId, btn) {
+      const inp = $(inputId);
+      const show = inp.type === 'password';
+      inp.type = show ? 'text' : 'password';
+      btn.querySelector('svg').innerHTML = show
+        ? '<path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/><path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/><line x1="1" y1="1" x2="23" y2="23"/>'
+        : '<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>';
+    }
 
+    /* --- Dates --- */
     function getMaxBookingDate() {
-      const today = new Date();
-      const maxDate = new Date(today.getFullYear(), today.getMonth() + 2, today.getDate());
-      return maxDate.toISOString().split('T')[0];
+      const t = new Date();
+      return new Date(t.getFullYear(), t.getMonth() + 2, t.getDate()).toISOString().split('T')[0];
+    }
+    function formatDatePretty(ds) {
+      return new Date(ds + 'T00:00:00').toLocaleDateString('en-PK', { day:'numeric', month:'long', year:'numeric' });
+    }
+    function formatDateDisplay(val) {
+      if (!val) return 'Select Date';
+      return new Date(val + 'T00:00:00').toLocaleDateString('en-PK', { weekday:'short', day:'numeric', month:'short', year:'numeric' });
+    }
+    function formatDate(ds) {
+      return new Date(ds + 'T00:00:00').toLocaleDateString('en-PK', { day:'numeric', month:'short', year:'numeric' });
     }
 
-    function formatDatePretty(dateStr) {
-      const d = new Date(dateStr + 'T00:00:00');
-      return d.toLocaleDateString('en-PK', { day: 'numeric', month: 'long', year: 'numeric' });
+    /* --- Storage --- */
+    const getUsers        = ()  => JSON.parse(localStorage.getItem('pr_users')    || '{}');
+    const saveUsers       = u  => localStorage.setItem('pr_users',    JSON.stringify(u));
+    const getAllBookings   = ()  => JSON.parse(localStorage.getItem('pr_bookings') || '[]');
+    const saveAllBookings = b  => localStorage.setItem('pr_bookings', JSON.stringify(b));
+
+    function bookedSeatKey(tid, cls, date) { return `pr_seats_${tid}_${cls.replace(/\s+/g,'_')}_${date}`; }
+    function getBookedSeats(tid, cls, date) { return JSON.parse(localStorage.getItem(bookedSeatKey(tid,cls,date)) || '[]'); }
+    function addBookedSeat(tid, cls, date, seat) {
+      const k = bookedSeatKey(tid,cls,date), s = getBookedSeats(tid,cls,date);
+      if (!s.includes(seat)) { s.push(seat); localStorage.setItem(k, JSON.stringify(s)); }
+    }
+    function removeBookedSeat(tid, cls, date, seat) {
+      const k = bookedSeatKey(tid,cls,date);
+      localStorage.setItem(k, JSON.stringify(getBookedSeats(tid,cls,date).filter(s => s !== seat)));
     }
 
-    /* ════════════════════════════════════════════════════
-       PAGE STATE — saved to sessionStorage for refresh persistence
-       Keys: pr_page (hero|results|booking), pr_search (JSON), pr_trains (JSON)
-       Session key: pr_session (JSON) — clears on tab close / hard reload
-    ════════════════════════════════════════════════════ */
+    /* --- Session --- */
+    let isLoggedIn = false, loggedInUser = '', loggedInName = '', userPassword = '', authMode = 'login';
 
-    /* ── Users & Bookings stay in localStorage (permanent data) ── */
-    function getUsers()         { return JSON.parse(localStorage.getItem('pr_users')    || '{}'); }
-    function saveUsers(u)       { localStorage.setItem('pr_users',    JSON.stringify(u)); }
-    function getAllBookings()    { return JSON.parse(localStorage.getItem('pr_bookings') || '[]'); }
-    function saveAllBookings(b) { localStorage.setItem('pr_bookings', JSON.stringify(b)); }
-
-    function bookedSeatKey(trainId, cls, date) {
-      return `pr_seats_${trainId}_${cls.replace(/\s+/g,'_')}_${date}`;
-    }
-    function getBookedSeats(trainId, cls, date) {
-      return JSON.parse(localStorage.getItem(bookedSeatKey(trainId, cls, date)) || '[]');
-    }
-    function addBookedSeat(trainId, cls, date, seatLabel) {
-      const key   = bookedSeatKey(trainId, cls, date);
-      const seats = getBookedSeats(trainId, cls, date);
-      if (!seats.includes(seatLabel)) { seats.push(seatLabel); localStorage.setItem(key, JSON.stringify(seats)); }
-    }
-    function removeBookedSeat(trainId, cls, date, seatLabel) {
-      const key   = bookedSeatKey(trainId, cls, date);
-      const seats = getBookedSeats(trainId, cls, date).filter(s => s !== seatLabel);
-      localStorage.setItem(key, JSON.stringify(seats));
-    }
-
-    /* ── Auth session — sessionStorage (clears on tab close & hard reload) ── */
-    let isLoggedIn   = false;
-    let loggedInUser = '';
-    let loggedInName = '';
-    let userPassword = '';
-    let authMode     = 'login';
-
-    function saveSession(email, name, pass) {
-      try { sessionStorage.setItem('pr_session', JSON.stringify({ email, name, pass })); } catch(e) {}
-    }
-    function clearSession() {
-      try {
-        sessionStorage.removeItem('pr_session');
-        sessionStorage.removeItem('pr_page');
-        sessionStorage.removeItem('pr_search');
-        sessionStorage.removeItem('pr_trains');
-      } catch(e) {}
-    }
+    function saveSession(e,n,p) { try { sessionStorage.setItem('pr_session', JSON.stringify({email:e,name:n,pass:p})); } catch(_){} }
+    function clearSession() { try { ['pr_session','pr_page','pr_search','pr_trains'].forEach(k => sessionStorage.removeItem(k)); } catch(_){} }
     function restoreSession() {
       try {
         const s = JSON.parse(sessionStorage.getItem('pr_session') || 'null');
-        if (s && s.email && s.pass) {
-          const users = getUsers();
-          if (users[s.email] && users[s.email].password === s.pass) {
-            isLoggedIn   = true;
-            loggedInUser = s.email;
-            loggedInName = s.name || users[s.email].name || '';
-            userPassword = s.pass;
-            return true;
+        if (s?.email && s?.pass) {
+          const u = getUsers();
+          if (u[s.email]?.password === s.pass) {
+            isLoggedIn = true; loggedInUser = s.email; loggedInName = s.name || u[s.email].name || ''; userPassword = s.pass; return true;
           }
         }
-      } catch(e) {}
+      } catch(_){}
       return false;
     }
 
-    /* ── Page state helpers — sessionStorage (survives normal refresh) ── */
-    function savePageState(page, extra) {
-      try {
-        sessionStorage.setItem('pr_page', page);
-        if (extra) sessionStorage.setItem('pr_search', JSON.stringify(extra));
-      } catch(e) {}
-    }
+    function savePageState(p, e) { try { sessionStorage.setItem('pr_page', p); if (e) sessionStorage.setItem('pr_search', JSON.stringify(e)); } catch(_){} }
     function getPageState() {
-      try {
-        return {
-          page:   sessionStorage.getItem('pr_page') || 'hero',
-          search: JSON.parse(sessionStorage.getItem('pr_search') || 'null'),
-          trains: JSON.parse(sessionStorage.getItem('pr_trains') || 'null'),
-        };
-      } catch(e) { return { page:'hero', search:null, trains:null }; }
+      try { return { page: sessionStorage.getItem('pr_page')||'hero', search: JSON.parse(sessionStorage.getItem('pr_search')||'null'), trains: JSON.parse(sessionStorage.getItem('pr_trains')||'null') }; }
+      catch(_) { return {page:'hero',search:null,trains:null}; }
     }
-    function saveTrainsState(trains) {
-      try { sessionStorage.setItem('pr_trains', JSON.stringify(trains)); } catch(e) {}
-    }
+    function saveTrainsState(t) { try { sessionStorage.setItem('pr_trains', JSON.stringify(t)); } catch(_){} }
 
-    let selectedTrain      = null;
-    let travelDateGlobal   = '';
-    let userSource         = '';
-    let userDestination    = '';
-    let confirmedBookingId = null;
-    let currentSeatLabel   = '';
-    let seatData           = {};
-    let activeCoach        = '';
+    let selectedTrain=null, travelDateGlobal='', userSource='', userDestination='', confirmedBookingId=null, currentSeatLabel='', seatData={}, activeCoach='';
 
-    /* ════════════════════════════════════════════════════
-       TOAST
-    ════════════════════════════════════════════════════ */
-    function showToast(msg, type = 'success') {
-      const t = $('toast');
-      t.textContent = msg;
-      t.className   = `toast toast--${type} toast--show`;
+    /* --- Toast --- */
+    function showToast(msg, type='success') {
+      const t = $('toast'); t.textContent = msg;
+      t.className = `toast toast--${type} toast--show`;
       setTimeout(() => t.className = 'toast', 3400);
     }
 
-    /* ════════════════════════════════════════════════════
-       DATE PICKER
-    ════════════════════════════════════════════════════ */
-    const travelDateInput = $('travelDate');
-    const dateDisplay     = $('dateDisplay');
-
-    function formatDateDisplay(val) {
-      if (!val) return 'Select Date';
-      const d = new Date(val + 'T00:00:00');
-      return d.toLocaleDateString('en-PK', { weekday:'short', day:'numeric', month:'short', year:'numeric' });
-    }
-
-    const tomorrowStr = () => {
-      const d = new Date(); d.setDate(d.getDate() + 1); return d.toISOString().split('T')[0];
-    };
-
-    travelDateInput.min     = tomorrowStr();
-    travelDateInput.max     = getMaxBookingDate();
-    travelDateInput.value   = tomorrowStr();
-    dateDisplay.textContent = formatDateDisplay(tomorrowStr());
+    /* --- Date Picker --- */
+    const travelDateInput = $('travelDate'), dateDisplay = $('dateDisplay');
+    const tomorrowStr = () => { const d = new Date(); d.setDate(d.getDate()+1); return d.toISOString().split('T')[0]; };
+    travelDateInput.min = tomorrowStr(); travelDateInput.max = getMaxBookingDate();
+    travelDateInput.value = tomorrowStr(); dateDisplay.textContent = formatDateDisplay(tomorrowStr());
     travelDateInput.addEventListener('change', () => { dateDisplay.textContent = formatDateDisplay(travelDateInput.value); });
 
-    /* ════════════════════════════════════════════════════
-       POPUP HANDLERS
-    ════════════════════════════════════════════════════ */
+    /* --- Popups --- */
     $('btnSearchLrCancel').addEventListener('click', () => $('searchLoginOverlay').classList.add('hidden'));
-    $('searchLoginOverlay').addEventListener('click', e => { if (e.target === $('searchLoginOverlay')) $('searchLoginOverlay').classList.add('hidden'); });
+    $('searchLoginOverlay').addEventListener('click', e => { if (e.target===$('searchLoginOverlay')) $('searchLoginOverlay').classList.add('hidden'); });
     $('btnSearchLrLogin').addEventListener('click', () => { $('searchLoginOverlay').classList.add('hidden'); openAuthOverlay('login'); });
-
     $('btnDateLimitOk').addEventListener('click', () => $('dateLimitOverlay').classList.add('hidden'));
-    $('dateLimitOverlay').addEventListener('click', e => { if (e.target === $('dateLimitOverlay')) $('dateLimitOverlay').classList.add('hidden'); });
+    $('dateLimitOverlay').addEventListener('click', e => { if (e.target===$('dateLimitOverlay')) $('dateLimitOverlay').classList.add('hidden'); });
 
-    function showDateLimitError(selectedDate) {
-      const maxDate = getMaxBookingDate();
-      $('dateLimitMsg').textContent = `آپ نے ${formatDatePretty(selectedDate)} منتخب کی ہے، لیکن بکنگ صرف ${formatDatePretty(maxDate)} تک دستیاب ہے۔`;
+    function showDateLimitError(d) {
+      $('dateLimitMsg').textContent = `آپ نے ${formatDatePretty(d)} منتخب کی ہے، لیکن بکنگ صرف ${formatDatePretty(getMaxBookingDate())} تک دستیاب ہے۔`;
       $('dateLimitOverlay').classList.remove('hidden');
     }
 
-    /* ════════════════════════════════════════════════════
-       PASSWORD STRENGTH
-    ════════════════════════════════════════════════════ */
+    /* --- Password Strength --- */
     function checkPasswordStrength(pass) {
-      const hasUpper   = /[A-Z]/.test(pass);
-      const hasNumber  = /[0-9]/.test(pass);
-      const hasSpecial = /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?`~]/.test(pass);
-      const hasLength  = pass.length >= 8;
-
-      $('req-upper').classList.toggle('met', hasUpper);
-      $('req-number').classList.toggle('met', hasNumber);
-      $('req-special').classList.toggle('met', hasSpecial);
-      $('req-length').classList.toggle('met', hasLength);
-
-      const score = [hasUpper, hasNumber, hasSpecial, hasLength].filter(Boolean).length;
-      const segs  = [$('psb1'), $('psb2'), $('psb3'), $('psb4')];
-      const hint  = $('passHint');
-      segs.forEach(s => s.className = 'psb-seg');
-
-      if (!pass.length) { hint.textContent = ''; hint.className = 'password-hint'; return { valid:false }; }
-      if (score <= 1) { segs[0].classList.add('weak'); hint.textContent = 'Weak — add more characters & symbols'; hint.className = 'password-hint weak'; }
-      else if (score === 2) { segs[0].classList.add('medium'); segs[1].classList.add('medium'); hint.textContent = 'Fair — almost there!'; hint.className = 'password-hint medium'; }
-      else if (score === 3) { segs[0].classList.add('medium'); segs[1].classList.add('medium'); segs[2].classList.add('medium'); hint.textContent = 'Good — one more requirement'; hint.className = 'password-hint medium'; }
-      else { segs.forEach(s => s.classList.add('strong')); hint.textContent = '✓ Strong password'; hint.className = 'password-hint strong'; }
-      return { valid: hasUpper && hasNumber && hasSpecial && hasLength };
+      const hU = /[A-Z]/.test(pass), hN = /[0-9]/.test(pass),
+            hS = /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?`~]/.test(pass), hL = pass.length >= 8;
+      $('req-upper').classList.toggle('met',hU); $('req-number').classList.toggle('met',hN);
+      $('req-special').classList.toggle('met',hS); $('req-length').classList.toggle('met',hL);
+      const score = [hU,hN,hS,hL].filter(Boolean).length;
+      const segs = [$('psb1'),$('psb2'),$('psb3'),$('psb4')], hint = $('passHint');
+      segs.forEach(s => s.className='psb-seg');
+      if (!pass.length) { hint.textContent=''; hint.className='password-hint'; return {valid:false}; }
+      if (score<=1)      { segs[0].classList.add('weak');   hint.textContent='Weak — add more characters & symbols'; hint.className='password-hint weak'; }
+      else if (score===2){ segs[0].classList.add('medium'); segs[1].classList.add('medium'); hint.textContent='Fair — almost there!'; hint.className='password-hint medium'; }
+      else if (score===3){ segs[0].classList.add('medium'); segs[1].classList.add('medium'); segs[2].classList.add('medium'); hint.textContent='Good — one more requirement'; hint.className='password-hint medium'; }
+      else               { segs.forEach(s=>s.classList.add('strong')); hint.textContent='✓ Strong password'; hint.className='password-hint strong'; }
+      return { valid: hU && hN && hS && hL };
     }
 
-    $('authPassword').addEventListener('input', () => {
-      if (authMode === 'signup') checkPasswordStrength($('authPassword').value);
-      checkConfirmMatch();
-    });
+    $('authPassword').addEventListener('input', () => { if (authMode==='signup') checkPasswordStrength($('authPassword').value); checkConfirmMatch(); });
     $('authConfirmPass').addEventListener('input', checkConfirmMatch);
 
     function checkConfirmMatch() {
-      const p1 = $('authPassword').value, p2 = $('authConfirmPass').value, el = $('passMatchHint');
-      if (!p2.length) { el.textContent = ''; el.className = 'pass-match-hint'; return; }
-      if (p1 === p2)  { el.textContent = '✓ Passwords match'; el.className = 'pass-match-hint match'; }
-      else            { el.textContent = '✗ Passwords do not match'; el.className = 'pass-match-hint nomatch'; }
+      const p1=$('authPassword').value, p2=$('authConfirmPass').value, el=$('passMatchHint');
+      if (!p2.length) { el.textContent=''; el.className='pass-match-hint'; return; }
+      el.textContent = p1===p2 ? '✓ Passwords match' : '✗ Passwords do not match';
+      el.className   = 'pass-match-hint ' + (p1===p2 ? 'match' : 'nomatch');
     }
 
-    /* ════════════════════════════════════════════════════
-       AUTH MODE SWITCH
-    ════════════════════════════════════════════════════ */
+    /* --- Auth Mode Switch --- */
     function switchAuthMode(mode) {
       authMode = mode;
-      const isSignup = mode === 'signup';
-      $('tabLogin').classList.toggle('active',  !isSignup);
-      $('tabSignup').classList.toggle('active',  isSignup);
-      $('fieldName').style.display            = isSignup ? '' : 'none';
-      $('fieldConfirm').classList.toggle('hidden', !isSignup);
-      $('signupStrengthWrap').style.display   = isSignup ? '' : 'none';
-      $('authTitle').textContent              = isSignup ? 'Create Account' : 'Welcome Back';
-      $('authSubtitle').textContent           = isSignup ? 'Register as a new passenger' : 'Pakistan Railways — Passenger Portal';
-      $('btnAuthSubmit').textContent          = isSignup ? 'Sign Up / رجسٹر کریں' : 'Login / لاگ ان';
-      $('authSwitch').innerHTML               = isSignup
+      const iS = mode==='signup';
+      $('tabLogin').classList.toggle('active',!iS); $('tabSignup').classList.toggle('active',iS);
+      $('fieldName').style.display = iS ? '' : 'none';
+      $('fieldConfirm').classList.toggle('hidden',!iS);
+      $('signupStrengthWrap').style.display = iS ? '' : 'none';
+      $('authTitle').textContent    = iS ? 'Create Account' : 'Welcome Back';
+      $('authSubtitle').textContent = iS ? 'Register as a new passenger' : 'Pakistan Railways — Passenger Portal';
+      $('btnAuthSubmit').textContent = iS ? 'Sign Up / رجسٹر کریں' : 'Login / لاگ ان';
+      $('authSwitch').innerHTML = iS
         ? 'Already have an account? <a onclick="switchAuthMode(\'login\')">Login</a>'
         : 'Don\'t have an account? <a onclick="switchAuthMode(\'signup\')">Sign Up</a>';
-      $('authPassword').value   = '';
-      $('authConfirmPass').value = '';
-      if (isSignup) checkPasswordStrength('');
+      $('authPassword').value = ''; $('authConfirmPass').value = '';
+      if (iS) checkPasswordStrength('');
       $('passMatchHint').textContent = '';
     }
 
@@ -673,194 +592,138 @@
       if (preferMode) switchAuthMode(preferMode);
       $('loginOverlay').classList.remove('hidden');
       $('authEmail').value = $('authPassword').value = $('authName').value = $('authConfirmPass').value = '';
-      if (authMode === 'signup') checkPasswordStrength('');
+      if (authMode==='signup') checkPasswordStrength('');
       setTimeout(() => $('authEmail').focus(), 150);
     }
 
-    /* ════════════════════════════════════════════════════
-       BOOT — restore session then restore page state
-    ════════════════════════════════════════════════════ */
-    restoreSession();
-    updateNavState();
-    restorePageState();   // <— must run after session restore
+    /* --- Boot --- */
+    restoreSession(); updateNavState(); restorePageState();
 
     function restorePageState() {
-      if (!isLoggedIn) {
-        showPage('hero');
-        return;
-      }
-      const { page, search, trains } = getPageState();
-      if (page === 'results' && search && trains) {
-        userSource      = search.source;
-        userDestination = search.dest;
-        travelDateGlobal = search.date;
+      if (!isLoggedIn) { showPage('hero'); return; }
+      const {page,search,trains} = getPageState();
+      if (page==='results' && search && trains) {
+        userSource=search.source; userDestination=search.dest; travelDateGlobal=search.date;
         renderTrains(trains, search.source, search.dest, search.date);
-      } else {
-        showPage('hero');
-      }
+      } else { showPage('hero'); }
     }
 
     function showPage(name) {
-      if (name === 'hero') {
-        $('heroSection').style.display    = 'flex';
-        $('resultsSection').style.display = 'none';
-      } else if (name === 'results') {
-        $('heroSection').style.display    = 'none';
-        $('resultsSection').style.display = 'block';
-      }
+      $('heroSection').style.display    = name==='hero' ? 'flex' : 'none';
+      $('resultsSection').style.display = name==='results' ? 'block' : 'none';
     }
 
-    /* ════════════════════════════════════════════════════
-       LOGIN / LOGOUT
-    ════════════════════════════════════════════════════ */
+    /* --- Login / Logout --- */
     $('btnLogin').addEventListener('click', () => {
       if (isLoggedIn) {
-        isLoggedIn = false; loggedInUser = ''; loggedInName = ''; userPassword = '';
-        clearSession();
-        updateNavState();
-        showToast('Logged out successfully / لاگ آؤٹ کامیاب', 'logout');
+        isLoggedIn=false; loggedInUser=''; loggedInName=''; userPassword='';
+        clearSession(); updateNavState();
+        showToast('Logged out successfully / لاگ آؤٹ کامیاب','logout');
         showPage('hero');
-        if ($('bookingModal').style.display === 'flex') $('bookingModal').style.display = 'none';
-      } else {
-        openAuthOverlay('login');
-      }
+        if ($('bookingModal').style.display==='flex') $('bookingModal').style.display='none';
+      } else { openAuthOverlay('login'); }
     });
 
     $('loginClose').addEventListener('click', () => $('loginOverlay').classList.add('hidden'));
-    $('loginOverlay').addEventListener('click', e => { if (e.target === $('loginOverlay')) $('loginOverlay').classList.add('hidden'); });
-
+    $('loginOverlay').addEventListener('click', e => { if (e.target===$('loginOverlay')) $('loginOverlay').classList.add('hidden'); });
     $('btnAuthSubmit').addEventListener('click', handleAuthSubmit);
-    [$('authEmail'), $('authPassword'), $('authConfirmPass'), $('authName')].forEach(inp => {
-      inp.addEventListener('keydown', e => { if (e.key === 'Enter') handleAuthSubmit(); });
+    [$('authEmail'),$('authPassword'),$('authConfirmPass'),$('authName')].forEach(inp => {
+      inp.addEventListener('keydown', e => { if (e.key==='Enter') handleAuthSubmit(); });
     });
 
     function handleAuthSubmit() {
-      const email = $('authEmail').value.trim().toLowerCase();
-      const pass  = $('authPassword').value;
-      const name  = $('authName').value.trim();
-
-      if (!email || !pass) { showToast('Please enter email and password', 'error'); return; }
-      if (!email.includes('@') || !email.includes('.')) { showToast('Please enter a valid email address', 'error'); return; }
-
+      const email=$('authEmail').value.trim().toLowerCase(), pass=$('authPassword').value, name=$('authName').value.trim();
+      if (!email||!pass) { showToast('Please enter email and password','error'); return; }
+      if (!email.includes('@')||!email.includes('.')) { showToast('Please enter a valid email address','error'); return; }
       const users = getUsers();
-
-      if (authMode === 'signup') {
-        if (!name) { showToast('Please enter your full name', 'error'); return; }
-        if (!/^[A-Za-z ]{2,60}$/.test(name)) { showToast('Name must contain only English alphabets', 'error'); return; }
-        const { valid } = checkPasswordStrength(pass);
-        if (!valid) { showToast('Password must include uppercase, number & special character', 'error'); return; }
-        if (pass !== $('authConfirmPass').value) { showToast('Passwords do not match', 'error'); return; }
-        if (users[email]) { showToast('Email already registered. Please login.', 'error'); return; }
-        users[email] = { name, password: pass, createdAt: new Date().toISOString() };
-        saveUsers(users);
-        loginUser(email, name, pass);
-        showToast(`Account created! Welcome, ${name} 🎉`, 'success');
+      if (authMode==='signup') {
+        if (!name) { showToast('Please enter your full name','error'); return; }
+        if (!/^[A-Za-z ]{2,60}$/.test(name)) { showToast('Name must contain only English alphabets','error'); return; }
+        const {valid} = checkPasswordStrength(pass);
+        if (!valid) { showToast('Password must include uppercase, number & special character','error'); return; }
+        if (pass!==$('authConfirmPass').value) { showToast('Passwords do not match','error'); return; }
+        if (users[email]) { showToast('Email already registered. Please login.','error'); return; }
+        users[email] = { name, password:pass, createdAt:new Date().toISOString() };
+        saveUsers(users); loginUser(email,name,pass);
+        showToast(`Account created! Welcome, ${name} 🎉`,'success');
       } else {
-        if (!users[email]) { showToast('No account found. Please sign up first.', 'error'); return; }
-        if (users[email].password !== pass) { showToast('Incorrect password / غلط پاس ورڈ', 'error'); return; }
+        if (!users[email]) { showToast('No account found. Please sign up first.','error'); return; }
+        if (users[email].password!==pass) { showToast('Incorrect password / غلط پاس ورڈ','error'); return; }
         loginUser(email, users[email].name, pass);
-        showToast(`Welcome back, ${users[email].name} 👋`, 'success');
+        showToast(`Welcome back, ${users[email].name} 👋`,'success');
       }
       $('loginOverlay').classList.add('hidden');
     }
 
-    function loginUser(email, name, pass) {
-      isLoggedIn = true; loggedInUser = email; loggedInName = name; userPassword = pass;
-      saveSession(email, name, pass);
-      updateNavState();
+    function loginUser(email,name,pass) {
+      isLoggedIn=true; loggedInUser=email; loggedInName=name; userPassword=pass;
+      saveSession(email,name,pass); updateNavState();
     }
 
     function updateNavState() {
-      const btn  = $('btnLogin');
-      const text = $('btnLoginText');
+      const btn=$('btnLogin'), text=$('btnLoginText');
       if (isLoggedIn) {
-        btn.classList.add('logged-in');
-        text.textContent = 'Log Out';
-        btn.querySelector('svg').innerHTML = `<path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/>`;
+        btn.classList.add('logged-in'); text.textContent='Log Out';
+        btn.querySelector('svg').innerHTML=`<path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/>`;
       } else {
-        btn.classList.remove('logged-in');
-        text.textContent = 'Login / Sign Up';
-        btn.querySelector('svg').innerHTML = `<path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>`;
+        btn.classList.remove('logged-in'); text.textContent='Login / Sign Up';
+        btn.querySelector('svg').innerHTML=`<path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>`;
       }
     }
 
-    /* ════════════════════════════════════════════════════
-       LOGIN REQUIRED (ticket download)
-    ════════════════════════════════════════════════════ */
+    /* --- Login Required --- */
     function showLoginRequired() { $('loginRequiredOverlay').classList.remove('hidden'); }
     $('btnLrCancel').addEventListener('click', () => $('loginRequiredOverlay').classList.add('hidden'));
-    $('loginRequiredOverlay').addEventListener('click', e => { if (e.target === $('loginRequiredOverlay')) $('loginRequiredOverlay').classList.add('hidden'); });
+    $('loginRequiredOverlay').addEventListener('click', e => { if (e.target===$('loginRequiredOverlay')) $('loginRequiredOverlay').classList.add('hidden'); });
     $('btnLrLogin').addEventListener('click', () => { $('loginRequiredOverlay').classList.add('hidden'); openAuthOverlay('login'); });
 
-    /* ════════════════════════════════════════════════════
-       CANCEL CONFIRM MODAL
-    ════════════════════════════════════════════════════ */
-    let pendingCancelId  = null;
-    let pendingCancelPnr = '';
-    let isCancelling     = false;
+    /* --- Cancel Confirm --- */
+    let pendingCancelId=null, pendingCancelPnr='', isCancelling=false;
 
     function openCancelConfirm(id, pnr) {
-      pendingCancelId  = id; pendingCancelPnr = pnr;
-      $('cancelPnrDisplay').textContent = pnr || '—';
-      $('cancelTicketInfo').textContent = 'This action cannot be undone / یہ عمل واپس نہیں ہو سکتا';
-      $('cancelPasswordInput').value    = '';
-      $('cancelPasswordInput').classList.remove('error');
-      $('cancelPassError').classList.remove('visible');
-      isCancelling = false;
+      pendingCancelId=id; pendingCancelPnr=pnr;
+      $('cancelPnrDisplay').textContent='PNR: ' + (pnr||'—');
+      $('cancelTicketInfo').textContent='This action cannot be undone / یہ عمل واپس نہیں ہو سکتا';
+      $('cancelPasswordInput').value=''; $('cancelPasswordInput').classList.remove('error');
+      $('cancelPassError').classList.remove('visible'); isCancelling=false;
       $('cancelConfirmOverlay').classList.remove('hidden');
       setTimeout(() => $('cancelPasswordInput').focus(), 200);
     }
 
-    $('btnCancelNo').addEventListener('click', () => { $('cancelConfirmOverlay').classList.add('hidden'); pendingCancelId = null; isCancelling = false; });
+    $('btnCancelNo').addEventListener('click', () => { $('cancelConfirmOverlay').classList.add('hidden'); pendingCancelId=null; isCancelling=false; });
     $('cancelConfirmOverlay').addEventListener('click', e => {
-      if (e.target === $('cancelConfirmOverlay')) { $('cancelConfirmOverlay').classList.add('hidden'); pendingCancelId = null; isCancelling = false; }
+      if (e.target===$('cancelConfirmOverlay')) { $('cancelConfirmOverlay').classList.add('hidden'); pendingCancelId=null; isCancelling=false; }
     });
 
     async function executeCancelTicket() {
       if (isCancelling) return;
       const entered = $('cancelPasswordInput').value.trim();
-      if (!isLoggedIn || entered !== userPassword) {
+      if (!isLoggedIn || entered!==userPassword) {
         $('cancelPasswordInput').classList.add('error');
         $('cancelPassError').classList.add('visible');
-        $('cancelPasswordInput').addEventListener('animationend', () => { $('cancelPasswordInput').classList.remove('error'); }, { once: true });
+        $('cancelPasswordInput').addEventListener('animationend', () => $('cancelPasswordInput').classList.remove('error'), {once:true});
         return;
       }
-      isCancelling = true;
-      $('btnCancelYes').disabled    = true;
-      $('btnCancelYes').textContent = 'Cancelling…';
-
-      try {
-        const res = await fetch(`${API}/delete-booking/${pendingCancelId}`, { method: 'DELETE' });
-        await res.json();
-      } catch {}
-
-      const all     = getAllBookings();
-      const booking = all.find(b => b.id === pendingCancelId);
+      isCancelling=true; $('btnCancelYes').disabled=true; $('btnCancelYes').textContent='Cancelling…';
+      try { const res=await fetch(`${API}/delete-booking/${pendingCancelId}`,{method:'DELETE'}); await res.json(); } catch(_){}
+      const all=getAllBookings(), booking=all.find(b=>b.id===pendingCancelId);
       if (booking) removeBookedSeat(booking.train_id, booking.selected_class, booking.travel_date, booking.seat);
-      saveAllBookings(all.filter(b => b.id !== pendingCancelId));
-
-      $('cancelConfirmOverlay').classList.add('hidden');
-      pendingCancelId = null;
-      $('btnCancelYes').disabled    = false;
-      $('btnCancelYes').textContent = 'Cancel Ticket';
-      isCancelling = false;
-      showRefundPopup(booking);
-      loadBookings();
+      saveAllBookings(all.filter(b=>b.id!==pendingCancelId));
+      $('cancelConfirmOverlay').classList.add('hidden'); pendingCancelId=null;
+      $('btnCancelYes').disabled=false; $('btnCancelYes').textContent='Cancel Ticket'; isCancelling=false;
+      showRefundPopup(booking); loadBookings();
     }
 
     $('btnCancelYes').addEventListener('click', executeCancelTicket);
-    $('cancelPasswordInput').addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); executeCancelTicket(); } });
+    $('cancelPasswordInput').addEventListener('keydown', e => { if (e.key==='Enter') { e.preventDefault(); executeCancelTicket(); } });
 
-    /* ════════════════════════════════════════════════════
-       REFUND POPUP
-    ════════════════════════════════════════════════════ */
+    /* --- Refund Popup --- */
     function showRefundPopup(booking) {
-      const refundAmount = booking ? Math.round((booking.total || 0) * 0.85) : 0;
-      const pnr          = booking ? booking.pnr : '—';
+      const refundAmount = booking ? Math.round((booking.total||0)*0.85) : 0;
+      const pnr = booking ? booking.pnr : '—';
       const overlay = document.createElement('div');
-      overlay.className = 'login-required-overlay';
-      overlay.style.cssText = 'z-index:99999;display:flex;';
-      overlay.innerHTML = `
+      overlay.className='login-required-overlay'; overlay.style.cssText='z-index:99999;display:flex;';
+      overlay.innerHTML=`
         <div class="login-required-box" style="border-top:4px solid #0d6b36;max-width:440px;text-align:center;">
           <div class="lr-icon" style="color:#0d6b36;background:rgba(13,107,54,0.1);border-color:rgba(13,107,54,0.3);margin:0 auto 16px;">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><polyline points="9 12 11 14 15 10"/></svg>
@@ -881,193 +744,140 @@
       document.body.appendChild(overlay);
       const closeRefund = () => overlay.remove();
       overlay.querySelector('#btnRefundOk').addEventListener('click', closeRefund);
-      overlay.addEventListener('click', e => { if (e.target === overlay) closeRefund(); });
+      overlay.addEventListener('click', e => { if (e.target===overlay) closeRefund(); });
       document.addEventListener('keydown', function escClose(e) {
-        if (e.key === 'Escape' || e.key === 'Enter') { closeRefund(); document.removeEventListener('keydown', escClose); }
+        if (e.key==='Escape'||e.key==='Enter') { closeRefund(); document.removeEventListener('keydown',escClose); }
       });
     }
 
-    /* ════════════════════════════════════════════════════
-       STATIONS LOADER
-    ════════════════════════════════════════════════════ */
+    /* --- Stations --- */
     async function loadStations() {
-      const defaultStations = ['Karachi City','Karachi Cantonment','Hyderabad','Kotri','Nawabshah','Sukkur','Rohri','Bahawalpur','Multan','Sahiwal','Lahore','Gujranwala','Sialkot','Faisalabad','Rawalpindi','Islamabad','Attock','Peshawar','Quetta','Larkana'];
-      let stations = defaultStations;
-      try {
-        const res  = await fetch(`${API}/get-stations`);
-        const data = await res.json();
-        if (data.stations && data.stations.length) stations = data.stations;
-      } catch {}
-      ['sourceSelect', 'destSelect'].forEach(id => {
-        const sel = $(id);
-        stations.forEach(s => { const opt = document.createElement('option'); opt.value = opt.textContent = s; sel.appendChild(opt); });
+      const defaults = ['Karachi City','Karachi Cantonment','Hyderabad','Kotri','Nawabshah','Sukkur','Rohri','Bahawalpur','Multan','Sahiwal','Lahore','Gujranwala','Sialkot','Faisalabad','Rawalpindi','Islamabad','Attock','Peshawar','Quetta','Larkana'];
+      let stations = defaults;
+      try { const r=await fetch(`${API}/get-stations`), d=await r.json(); if (d.stations?.length) stations=d.stations; } catch(_){}
+      ['sourceSelect','destSelect'].forEach(id => {
+        const sel=$(id);
+        stations.forEach(s => { const opt=document.createElement('option'); opt.value=opt.textContent=s; sel.appendChild(opt); });
       });
-      /* restore search dropdowns if we came back via refresh */
-      const { search } = getPageState();
+      const {search} = getPageState();
       if (search && isLoggedIn) {
-        if (search.source) $('sourceSelect').value = search.source;
-        if (search.dest)   $('destSelect').value   = search.dest;
-        if (search.date) {
-          travelDateInput.value   = search.date;
-          dateDisplay.textContent = formatDateDisplay(search.date);
-        }
+        if (search.source) $('sourceSelect').value=search.source;
+        if (search.dest)   $('destSelect').value=search.dest;
+        if (search.date)   { travelDateInput.value=search.date; dateDisplay.textContent=formatDateDisplay(search.date); }
       }
     }
     loadStations();
 
     $('swapBtn').addEventListener('click', () => {
-      const src = $('sourceSelect').value, dst = $('destSelect').value;
-      $('sourceSelect').value = dst; $('destSelect').value = src;
+      const s=$('sourceSelect').value, d=$('destSelect').value;
+      $('sourceSelect').value=d; $('destSelect').value=s;
     });
 
-    /* ════════════════════════════════════════════════════
-       TRAIN SEARCH
-    ════════════════════════════════════════════════════ */
+    /* --- Train Search --- */
     $('btnSearch').addEventListener('click', async () => {
-      const source = $('sourceSelect').value;
-      const dest   = $('destSelect').value;
-      const dt     = travelDateInput.value;
-
+      const source=$('sourceSelect').value, dest=$('destSelect').value, dt=travelDateInput.value;
       if (!isLoggedIn) { $('searchLoginOverlay').classList.remove('hidden'); return; }
-      if (!source || !dest || !dt) { showToast('Please fill all fields', 'error'); return; }
-      if (source === dest)         { showToast('Source and destination cannot be same', 'error'); return; }
-
-      const maxDate = getMaxBookingDate();
-      if (dt > maxDate) { showDateLimitError(dt); return; }
-
-      userSource = source; userDestination = dest; travelDateGlobal = dt;
-
-      const btn = $('btnSearch');
-      btn.innerHTML = 'Searching…'; btn.disabled = true;
-
-      let trains = null;
-      try {
-        const res  = await fetch(`${API}/search-trains?source=${encodeURIComponent(source)}&destination=${encodeURIComponent(dest)}&travel_date=${dt}`);
-        const data = await res.json();
-        if (res.ok) trains = data.trains;
-      } catch {}
-
-      btn.innerHTML = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg> Search Trains`;
-      btn.disabled = false;
-
-      if (!trains) trains = generateMockTrains(source, dest);
-
-      /* save state so normal refresh restores this view */
-      savePageState('results', { source, dest, date: dt });
-      saveTrainsState(trains);
-
-      renderTrains(trains, source, dest, dt);
+      if (!source||!dest||!dt) { showToast('Please fill all fields','error'); return; }
+      if (source===dest) { showToast('Source and destination cannot be same','error'); return; }
+      if (dt>getMaxBookingDate()) { showDateLimitError(dt); return; }
+      userSource=source; userDestination=dest; travelDateGlobal=dt;
+      const btn=$('btnSearch'); btn.innerHTML='Searching…'; btn.disabled=true;
+      let trains=null;
+      try { const r=await fetch(`${API}/search-trains?source=${encodeURIComponent(source)}&destination=${encodeURIComponent(dest)}&travel_date=${dt}`), d=await r.json(); if (r.ok) trains=d.trains; } catch(_){}
+      btn.innerHTML=`<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg> Search Trains`;
+      btn.disabled=false;
+      if (!trains) trains=generateMockTrains(source,dest);
+      savePageState('results',{source,dest,date:dt}); saveTrainsState(trains);
+      renderTrains(trains,source,dest,dt);
     });
 
-    function generateMockTrains(src, dst) {
-      const trainNames = [{ name:'Karachi Express', id:1 }, { name:'Tezgam Express', id:2 }, { name:'Green Line Express', id:3 }];
-      const times = ['06:00', '14:00', '22:45'];
-      const labels = ['Available', 'Limited Seats', 'Booking Open'];
-      return trainNames.map((t, i) => ({ id: t.id, name: t.name, source: src, destination: dst, time: times[i], price_factor: 0.9 + i * 0.1, avail_label: labels[i] }));
+    function generateMockTrains(src,dst) {
+      return [{name:'Karachi Express',id:1},{name:'Tezgam Express',id:2},{name:'Green Line Express',id:3}].map((t,i) => ({
+        id:t.id, name:t.name, source:src, destination:dst, time:['06:00','14:00','22:45'][i],
+        price_factor:0.9+i*0.1, avail_label:['Available','Limited Seats','Booking Open'][i]
+      }));
     }
 
-    function renderTrains(trains, src, dst, dt) {
+    function renderTrains(trains,src,dst,dt) {
       showPage('results');
-      $('resultsTitle').textContent = `${trains.length} Train${trains.length !== 1 ? 's' : ''} · ${src} → ${dst} · ${formatDate(dt)}`;
-
-      const grid = $('trainsGrid');
-      grid.innerHTML = '';
-
+      $('resultsTitle').textContent=`${trains.length} Train${trains.length!==1?'s':''} · ${src} → ${dst} · ${formatDate(dt)}`;
+      const grid=$('trainsGrid'); grid.innerHTML='';
       if (!trains.length) {
-        grid.innerHTML = `<div class="no-trains"><svg width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg><p>No trains available for this route and date</p></div>`;
+        grid.innerHTML=`<div class="no-trains"><svg width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg><p>No trains available for this route and date</p></div>`;
         return;
       }
-
-      trains.forEach((train, i) => {
-        const card = document.createElement('div');
-        card.className = 'train-card';
-        card.style.animationDelay = `${i * 0.07}s`;
-        const pf = train.price_factor;
-        const ecoPx = Math.round(3500 * pf), acsPx = Math.round(6500 * pf), acbPx = Math.round(13250 * pf);
-        let badgeClass = 'available';
-        if (train.avail_label === 'Limited Seats') badgeClass = 'limited';
-        else if (train.avail_label === 'Booking Open') badgeClass = 'booking-open';
-        const badgeIcon = badgeClass === 'available' ? '🟢' : badgeClass === 'limited' ? '🟡' : '🔵';
-        card.innerHTML = `
+      trains.forEach((train,i) => {
+        const card=document.createElement('div'); card.className='train-card'; card.style.animationDelay=`${i*0.07}s`;
+        const pf=train.price_factor;
+        const bc=train.avail_label==='Limited Seats'?'limited':train.avail_label==='Booking Open'?'booking-open':'available';
+        const bi=bc==='available'?'🟢':bc==='limited'?'🟡':'🔵';
+        card.innerHTML=`
           <div class="train-card-header">
             <div class="train-badge">${train.id}</div>
             <div class="train-info"><h3>${train.name}</h3><p class="train-route">${train.source} <span>→</span> ${train.destination}</p></div>
             <div class="train-time"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>${train.time}</div>
           </div>
-          <div style="margin-bottom:14px;"><span class="avail-badge ${badgeClass}">${badgeIcon} ${train.avail_label}</span></div>
+          <div style="margin-bottom:14px;"><span class="avail-badge ${bc}">${bi} ${train.avail_label}</span></div>
           <div class="train-prices">
-            <div class="price-chip"><span>Economy</span><strong>Rs. ${ecoPx.toLocaleString()}</strong></div>
-            <div class="price-chip"><span>AC Standard</span><strong>Rs. ${acsPx.toLocaleString()}</strong></div>
-            <div class="price-chip price-chip--gold"><span>AC Business</span><strong>Rs. ${acbPx.toLocaleString()}</strong></div>
+            <div class="price-chip"><span>Economy</span><strong>Rs. ${Math.round(3500*pf).toLocaleString()}</strong></div>
+            <div class="price-chip"><span>AC Standard</span><strong>Rs. ${Math.round(6500*pf).toLocaleString()}</strong></div>
+            <div class="price-chip price-chip--gold"><span>AC Business</span><strong>Rs. ${Math.round(13250*pf).toLocaleString()}</strong></div>
           </div>
           <button class="btn-book" data-id="${train.id}" data-name="${train.name}" data-factor="${pf}" data-time="${train.time}">Book Now</button>`;
         grid.appendChild(card);
       });
-
       document.querySelectorAll('.btn-book').forEach(btn => {
         btn.addEventListener('click', () => {
           if (!isLoggedIn) { $('searchLoginOverlay').classList.remove('hidden'); return; }
-          selectedTrain = { id: parseInt(btn.dataset.id), name: btn.dataset.name, factor: parseFloat(btn.dataset.factor), time: btn.dataset.time };
+          selectedTrain={id:parseInt(btn.dataset.id),name:btn.dataset.name,factor:parseFloat(btn.dataset.factor),time:btn.dataset.time};
           openBookingModal();
         });
       });
     }
 
     $('btnBack').addEventListener('click', () => {
-      savePageState('hero', null);
-      try { sessionStorage.removeItem('pr_trains'); } catch(e) {}
-      showPage('hero');
+      savePageState('hero',null); try { sessionStorage.removeItem('pr_trains'); } catch(_){} showPage('hero');
     });
 
-    /* ════════════════════════════════════════════════════
-       INPUT FORMATTERS
-    ════════════════════════════════════════════════════ */
+    /* --- Input Formatters --- */
     function autoFormatCnic(input) {
-      let v = input.value.replace(/[^\d]/g, '').slice(0, 13);
-      if      (v.length <= 5)  input.value = v;
-      else if (v.length <= 12) input.value = v.slice(0,5) + '-' + v.slice(5);
-      else                     input.value = v.slice(0,5) + '-' + v.slice(5,12) + '-' + v.slice(12);
+      let v=input.value.replace(/[^\d]/g,'').slice(0,13);
+      if (v.length<=5) input.value=v;
+      else if (v.length<=12) input.value=v.slice(0,5)+'-'+v.slice(5);
+      else input.value=v.slice(0,5)+'-'+v.slice(5,12)+'-'+v.slice(12);
     }
-
     function autoFormatPhone(input) {
-      let v = input.value.replace(/[^\d]/g, '');
-      if (!v.startsWith('0')) v = '0' + v.replace(/^0+/, '');
-      v = v.slice(0, 11);
-      input.value = v.length > 4 ? v.slice(0,4) + '-' + v.slice(4) : v;
+      let v=input.value.replace(/[^\d]/g,'');
+      if (!v.startsWith('0')) v='0'+v.replace(/^0+/,'');
+      v=v.slice(0,11);
+      input.value=v.length>4?v.slice(0,4)+'-'+v.slice(4):v;
     }
 
-    /* ════════════════════════════════════════════════════
-       PAYMENT METHOD LOGIC
-       Visa & MasterCard: CVV + PIN only (no card digits field)
-       JazzCash & Easypaisa: mobile number + MPIN
-    ════════════════════════════════════════════════════ */
-    let activePM = 'JazzCash';
-
+    /* --- Payment Methods --- */
+    let activePM='JazzCash';
     const PM_RULES = {
-      JazzCash:   { type:'mobile', acctLen:11, pinLen:4, acctLabel:'JazzCash Mobile Number (11 digits)', acctPH:'03XXXXXXXXX', pinLabel:'MPIN (4 digits)', pinPH:'••••' },
-      Easypaisa:  { type:'mobile', acctLen:11, pinLen:6, acctLabel:'Easypaisa Mobile Number (11 digits)', acctPH:'03XXXXXXXXX', pinLabel:'MPIN (6 digits)', pinPH:'••••••' },
-      MasterCard: { type:'card',   cvvLen:4,   pinLen:4, cvvLabel:'CVV (4 digits)', cvvPH:'XXXX', pinLabel:'Card PIN (4 digits)', pinPH:'••••' },
-      Visa:       { type:'card',   cvvLen:4,   pinLen:4, cvvLabel:'CVV (4 digits)', cvvPH:'XXXX', pinLabel:'Card PIN (4 digits)', pinPH:'••••' },
+      JazzCash:   {type:'mobile', acctLen:11, pinLen:4, acctLabel:'JazzCash Mobile Number', acctPH:'03XXXXXXXXX', pinLabel:'MPIN (4 digits)', pinPH:'••••'},
+      Easypaisa:  {type:'mobile', acctLen:11, pinLen:6, acctLabel:'Easypaisa Mobile Number', acctPH:'03XXXXXXXXX', pinLabel:'MPIN (6 digits)', pinPH:'••••••'},
+      MasterCard: {type:'card',   cvvLen:4,   pinLen:4, cvvLabel:'CVV (4 digits)', cvvPH:'XXXX', pinLabel:'Card PIN (4 digits)', pinPH:'••••'},
+      Visa:       {type:'card',   cvvLen:4,   pinLen:4, cvvLabel:'CVV (4 digits)', cvvPH:'XXXX', pinLabel:'Card PIN (4 digits)', pinPH:'••••'},
     };
 
     function selectPM(method) {
-      activePM = method;
-      document.querySelectorAll('.pm-btn').forEach(b => b.classList.toggle('active', b.dataset.method === method));
+      activePM=method;
+      document.querySelectorAll('.pm-btn').forEach(b=>b.classList.toggle('active',b.dataset.method===method));
       renderPMFields();
     }
 
     function renderPMFields() {
-      const r   = PM_RULES[activePM];
-      const con = $('pmFields');
-
-      if (r.type === 'mobile') {
-        con.innerHTML = `
+      const r=PM_RULES[activePM], con=$('pmFields');
+      if (r.type==='mobile') {
+        con.innerHTML=`
           <div class="payment-grid single">
             <div class="field-group-modal">
-              <label>${r.acctLabel}</label>
-              <input type="text" id="pmAcct" placeholder="${r.acctPH}" maxlength="${r.acctLen}" inputmode="numeric"
-                oninput="this.value=this.value.replace(/[^\\d]/g,'').slice(0,${r.acctLen})" />
-              <span class="field-hint">Must start with 03, 11 digits total</span>
+              <label>${r.acctLabel} (11 digits, no dashes)</label>
+              <input type="text" id="pmAcct" placeholder="${r.acctPH}" maxlength="11" inputmode="numeric"
+                oninput="this.value=this.value.replace(/[^\\d]/g,'').slice(0,11)" />
+              <span class="field-hint">Must start with 03, exactly 11 digits, no dashes</span>
             </div>
             <div class="field-group-modal">
               <label>${r.pinLabel}</label>
@@ -1077,8 +887,7 @@
             </div>
           </div>`;
       } else {
-        /* Cards: only CVV + PIN (2 equal columns) */
-        con.innerHTML = `
+        con.innerHTML=`
           <div class="payment-grid">
             <div class="field-group-modal">
               <label>${r.cvvLabel}</label>
@@ -1097,147 +906,111 @@
     }
 
     function initPM() {
-      activePM = 'JazzCash';
-      document.querySelectorAll('.pm-btn').forEach(b => b.classList.toggle('active', b.dataset.method === 'JazzCash'));
+      activePM='JazzCash';
+      document.querySelectorAll('.pm-btn').forEach(b=>b.classList.toggle('active',b.dataset.method==='JazzCash'));
       renderPMFields();
     }
 
     function validatePMFields() {
-      const r   = PM_RULES[activePM];
-      const pin = (document.getElementById('pmPin') ? document.getElementById('pmPin').value.trim() : '');
-
-      if (r.type === 'mobile') {
-        const acct = (document.getElementById('pmAcct') ? document.getElementById('pmAcct').value.trim() : '');
-        if (acct.length !== r.acctLen) { showToast(`${activePM} account must be exactly ${r.acctLen} digits`, 'error'); return false; }
-        if (!acct.startsWith('03'))    { showToast('Mobile number must start with 03', 'error'); return false; }
+      const r=PM_RULES[activePM];
+      const pin=document.getElementById('pmPin')?.value.trim()||'';
+      if (r.type==='mobile') {
+        const acct=document.getElementById('pmAcct')?.value.trim()||'';
+        if (!/^\d{11}$/.test(acct))         { showToast('Please enter a valid account number — must be exactly 11 digits with no dashes','error'); return false; }
+        if (!acct.startsWith('03'))          { showToast('Mobile number must start with 03','error'); return false; }
       } else {
-        const cvv = (document.getElementById('pmCvv') ? document.getElementById('pmCvv').value.trim() : '');
-        if (cvv.length !== r.cvvLen) { showToast(`CVV must be exactly ${r.cvvLen} digits`, 'error'); return false; }
+        const cvv=document.getElementById('pmCvv')?.value.trim()||'';
+        if (cvv.length!==r.cvvLen) { showToast(`CVV must be exactly ${r.cvvLen} digits`,'error'); return false; }
       }
-
-      if (pin.length !== r.pinLen) { showToast(`PIN must be exactly ${r.pinLen} digits`, 'error'); return false; }
+      if (pin.length!==r.pinLen) { showToast(`PIN must be exactly ${r.pinLen} digits`,'error'); return false; }
       return true;
     }
 
-    /* ════════════════════════════════════════════════════
-       BOOKING MODAL
-    ════════════════════════════════════════════════════ */
+    /* --- Booking Modal --- */
     function openBookingModal() {
-      $('modalTrainName').textContent = selectedTrain.name;
-      $('pName').value = $('pCnic').value = $('pPhone').value = '';
-      $('pType').value  = 'Adult';
-      $('pClass').value = 'AC Business';
-      currentSeatLabel   = '';
-      confirmedBookingId = null;
-      updateFare();
-      goToStep(1);
-      loadSeatLayout();
-      $('bookingModal').style.display = 'flex';
+      $('modalTrainName').textContent=selectedTrain.name;
+      $('pName').value=$('pCnic').value=$('pPhone').value='';
+      $('pType').value='Adult'; $('pClass').value='AC Business';
+      currentSeatLabel=''; confirmedBookingId=null;
+      updateFare(); goToStep(1); loadSeatLayout();
+      $('bookingModal').style.display='flex';
     }
 
-    $('modalClose').addEventListener('click',  () => $('bookingModal').style.display = 'none');
-    $('bookingModal').addEventListener('click', e => { if (e.target === $('bookingModal')) $('bookingModal').style.display = 'none'; });
+    $('modalClose').addEventListener('click', () => $('bookingModal').style.display='none');
+    $('bookingModal').addEventListener('click', e => { if (e.target===$('bookingModal')) $('bookingModal').style.display='none'; });
 
     function goToStep(n) {
       [1,2,3].forEach(i => {
-        $(`step${i}`).classList.toggle('active', i === n);
-        const dot = $(`stepDot${i}`);
-        dot.classList.remove('active','done');
-        if (i === n) dot.classList.add('active');
-        else if (i < n) dot.classList.add('done');
+        $(`step${i}`).classList.toggle('active',i===n);
+        const dot=$(`stepDot${i}`); dot.classList.remove('active','done');
+        if (i===n) dot.classList.add('active'); else if (i<n) dot.classList.add('done');
       });
-      [1,2].forEach(i => $(`stepLine${i}`).classList.toggle('done', i < n));
+      [1,2].forEach(i => $(`stepLine${i}`).classList.toggle('done',i<n));
     }
 
-    /* ════════════════════════════════════════════════════
-       SEAT LAYOUT
-    ════════════════════════════════════════════════════ */
+    /* --- Seat Layout --- */
     async function loadSeatLayout() {
-      const cls = $('pClass').value;
-      $('coachTabs').innerHTML  = '';
-      $('cabinsGrid').innerHTML = '<div class="seat-loading">Loading seat layout…</div>';
-      currentSeatLabel          = '';
-      updateSelectedSeatDisplay();
-
-      const localBooked = getBookedSeats(selectedTrain.id, cls, travelDateGlobal);
-      let cabins = null;
-      try {
-        const res  = await fetch(`${API}/get-seats?train_id=${selectedTrain.id}&selected_class=${encodeURIComponent(cls)}&travel_date=${travelDateGlobal}`);
-        const data = await res.json();
-        cabins = data.cabins;
-      } catch {}
-
-      if (!cabins) cabins = generateMockSeats(cls);
-
-      cabins.forEach(cabin => { cabin.berths.forEach(berth => { if (localBooked.includes(berth.label)) berth.available = false; }); });
-
-      seatData = {};
-      cabins.forEach(cabin => { if (!seatData[cabin.coach]) seatData[cabin.coach] = []; seatData[cabin.coach].push(cabin); });
-
-      const coaches = Object.keys(seatData);
-      activeCoach   = coaches[0] || '';
+      const cls=$('pClass').value;
+      $('coachTabs').innerHTML=''; $('cabinsGrid').innerHTML='<div class="seat-loading">Loading seat layout…</div>';
+      currentSeatLabel=''; updateSelectedSeatDisplay();
+      const localBooked=getBookedSeats(selectedTrain.id,cls,travelDateGlobal);
+      let cabins=null;
+      try { const r=await fetch(`${API}/get-seats?train_id=${selectedTrain.id}&selected_class=${encodeURIComponent(cls)}&travel_date=${travelDateGlobal}`), d=await r.json(); cabins=d.cabins; } catch(_){}
+      if (!cabins) cabins=generateMockSeats(cls);
+      cabins.forEach(cabin => { cabin.berths.forEach(b => { if (localBooked.includes(b.label)) b.available=false; }); });
+      seatData={};
+      cabins.forEach(cabin => { if (!seatData[cabin.coach]) seatData[cabin.coach]=[]; seatData[cabin.coach].push(cabin); });
+      const coaches=Object.keys(seatData); activeCoach=coaches[0]||'';
       coaches.forEach(coach => {
-        const btn = document.createElement('button');
-        btn.className   = 'coach-tab' + (coach === activeCoach ? ' active' : '');
-        btn.textContent = `Coach ${coach}`;
-        btn.addEventListener('click', () => {
-          activeCoach = coach;
-          document.querySelectorAll('.coach-tab').forEach(b => b.classList.remove('active'));
-          btn.classList.add('active');
-          renderCabins();
-        });
+        const btn=document.createElement('button');
+        btn.className='coach-tab'+(coach===activeCoach?' active':''); btn.textContent=`Coach ${coach}`;
+        btn.addEventListener('click',()=>{ activeCoach=coach; document.querySelectorAll('.coach-tab').forEach(b=>b.classList.remove('active')); btn.classList.add('active'); renderCabins(); });
         $('coachTabs').appendChild(btn);
       });
       renderCabins();
     }
 
     function generateMockSeats(cls) {
-      const coachCount = cls === 'AC Business' ? 2 : cls === 'AC Standard' ? 3 : 4;
-      const berthNames = ['1-Lower','2-Middle','3-Upper','4-Lower','5-Middle','6-Upper'];
-      const cabins = [];
-      for (let c = 1; c <= coachCount; c++) {
-        const coachId = cls === 'AC Business' ? `A${c}` : cls === 'AC Standard' ? `B${c}` : `C${c}`;
-        for (let cb = 1; cb <= 4; cb++) {
-          const berths = berthNames.map(b => {
-            const label = `${coachId}-Cabin${cb}-${b}`;
-            return { berth: b, label, available: Math.random() > 0.35 };
-          });
-          cabins.push({ coach: coachId, cabin: cb, berths });
+      const cc=cls==='AC Business'?2:cls==='AC Standard'?3:4;
+      const bn=['1-Lower','2-Middle','3-Upper','4-Lower','5-Middle','6-Upper'];
+      const cabins=[];
+      for (let c=1;c<=cc;c++) {
+        const cid=cls==='AC Business'?`A${c}`:cls==='AC Standard'?`B${c}`:`C${c}`;
+        for (let cb=1;cb<=4;cb++) {
+          cabins.push({coach:cid,cabin:cb,berths:bn.map(b=>({berth:b,label:`${cid}-Cabin${cb}-${b}`,available:Math.random()>0.35}))});
         }
       }
       return cabins;
     }
 
     function renderCabins() {
-      const cabins = seatData[activeCoach] || [];
-      const grid   = $('cabinsGrid');
-      grid.innerHTML = '';
+      const cabins=seatData[activeCoach]||[], grid=$('cabinsGrid'); grid.innerHTML='';
       cabins.forEach(cabin => {
-        const card = document.createElement('div'); card.className = 'cabin-card';
-        const header = document.createElement('div'); header.className = 'cabin-header'; header.textContent = `Coach ${activeCoach} · Cabin ${cabin.cabin}`; card.appendChild(header);
-        const berthsDiv = document.createElement('div'); berthsDiv.className = 'cabin-berths';
+        const card=document.createElement('div'); card.className='cabin-card';
+        const hdr=document.createElement('div'); hdr.className='cabin-header'; hdr.textContent=`Coach ${activeCoach} · Cabin ${cabin.cabin}`; card.appendChild(hdr);
+        const bd=document.createElement('div'); bd.className='cabin-berths';
         cabin.berths.forEach(berth => {
-          const btn = document.createElement('button'); btn.className = 'berth-btn'; btn.textContent = berth.berth; btn.title = berth.label;
-          if (!berth.available) { btn.classList.add('unavailable'); btn.disabled = true; }
-          else if (berth.label === currentSeatLabel) btn.classList.add('selected');
-          btn.addEventListener('click', () => { if (!berth.available) return; currentSeatLabel = berth.label; updateSelectedSeatDisplay(); renderCabins(); });
-          berthsDiv.appendChild(btn);
+          const btn=document.createElement('button'); btn.className='berth-btn'; btn.textContent=berth.berth; btn.title=berth.label;
+          if (!berth.available) { btn.classList.add('unavailable'); btn.disabled=true; }
+          else if (berth.label===currentSeatLabel) btn.classList.add('selected');
+          btn.addEventListener('click',()=>{ if (!berth.available) return; currentSeatLabel=berth.label; updateSelectedSeatDisplay(); renderCabins(); });
+          bd.appendChild(btn);
         });
-        card.appendChild(berthsDiv); grid.appendChild(card);
+        card.appendChild(bd); grid.appendChild(card);
       });
     }
 
     function updateSelectedSeatDisplay() {
-      const el = $('selectedSeatText');
+      const el=$('selectedSeatText');
       if (currentSeatLabel) {
-        const parts = currentSeatLabel.split('-');
-        el.textContent = `Selected: Coach ${parts[0]} · Cabin ${parts[1]} · ${parts.slice(2).join(' ')}`;
-        $('selectedSeatDisplay').style.borderColor = 'rgba(200,151,42,0.6)';
-        $('selectedSeatDisplay').style.background  = 'rgba(200,151,42,0.12)';
+        const p=currentSeatLabel.split('-');
+        el.textContent=`Selected: Coach ${p[0]} · Cabin ${p[1]} · ${p.slice(2).join(' ')}`;
+        $('selectedSeatDisplay').style.borderColor='rgba(200,151,42,0.6)';
+        $('selectedSeatDisplay').style.background='rgba(200,151,42,0.12)';
       } else {
-        el.textContent = 'No seat selected — tap a green berth above';
-        $('selectedSeatDisplay').style.borderColor = 'rgba(200,151,42,0.3)';
-        $('selectedSeatDisplay').style.background  = 'rgba(200,151,42,0.08)';
+        el.textContent='No seat selected — tap a green berth above';
+        $('selectedSeatDisplay').style.borderColor='rgba(200,151,42,0.3)';
+        $('selectedSeatDisplay').style.background='rgba(200,151,42,0.08)';
       }
     }
 
@@ -1245,199 +1018,138 @@
     $('pType').addEventListener('change', updateFare);
 
     function calcFare() {
-      if (!selectedTrain) return { base:0, total:0 };
-      let base = BASE_PRICES[$('pClass').value] * selectedTrain.factor;
-      if ($('pType').value === 'Child') base /= 2;
-      base = Math.round(base);
-      return { base, total: base + RABTA_CHARGE };
+      if (!selectedTrain) return {base:0,total:0};
+      let base=BASE_PRICES[$('pClass').value]*selectedTrain.factor;
+      if ($('pType').value==='Child') base/=2;
+      base=Math.round(base);
+      return {base, total:base+RABTA_CHARGE};
     }
-
     function updateFare() {
-      const { base, total } = calcFare();
-      $('fareBase').textContent  = `Rs. ${base.toLocaleString()}`;
-      $('fareTotal').textContent = `Rs. ${total.toLocaleString()}`;
-      $('payAmount').textContent = `Rs. ${total.toLocaleString()}`;
+      const {base,total}=calcFare();
+      $('fareBase').textContent=`Rs. ${base.toLocaleString()}`;
+      $('fareTotal').textContent=`Rs. ${total.toLocaleString()}`;
+      $('payAmount').textContent=`Rs. ${total.toLocaleString()}`;
     }
 
-    /* ════════════════════════════════════════════════════
-       PROCEED TO PAYMENT
-    ════════════════════════════════════════════════════ */
+    /* --- Proceed to Payment --- */
     $('btnProceedToPayment').addEventListener('click', () => {
-      const name  = $('pName').value.trim();
-      const cnic  = $('pCnic').value.trim();
-      const phone = $('pPhone').value.trim();
-      if (!name)  { showToast('Passenger name is required', 'error'); return; }
-      if (!/^[A-Za-z ]{2,60}$/.test(name))  { showToast('Name: only English alphabets & spaces allowed', 'error'); return; }
-      if (!/^\d{5}-\d{7}-\d$/.test(cnic))   { showToast('CNIC must be in XXXXX-XXXXXXX-X format', 'error'); return; }
-      if (!/^0\d{3}-\d{7}$/.test(phone))    { showToast('Phone must be in 03XX-XXXXXXX format', 'error'); return; }
-      if (!currentSeatLabel)                 { showToast('Please select a seat first', 'error'); return; }
-      updateFare();
-      initPM();
-      goToStep(2);
+      const name=$('pName').value.trim(), cnic=$('pCnic').value.trim(), phone=$('pPhone').value.trim();
+      if (!name) { showToast('Passenger name is required','error'); return; }
+      if (!/^[A-Za-z ]{2,60}$/.test(name)) { showToast('Name: only English alphabets & spaces allowed','error'); return; }
+      if (!/^\d{5}-\d{7}-\d$/.test(cnic))  { showToast('CNIC must be in XXXXX-XXXXXXX-X format','error'); return; }
+      if (!/^0\d{3}-\d{7}$/.test(phone))   { showToast('Phone must be in 03XX-XXXXXXX format','error'); return; }
+      if (!currentSeatLabel)               { showToast('Please select a seat first','error'); return; }
+      updateFare(); initPM(); goToStep(2);
     });
 
-    /* ════════════════════════════════════════════════════
-       PAYMENT & BOOKING CONFIRM
-    ════════════════════════════════════════════════════ */
+    /* --- Pay & Confirm --- */
     $('btnPay').addEventListener('click', async () => {
       if (!validatePMFields()) return;
-
-      $('payBtnWrapper').style.display = 'none';
-      $('processingOverlay').classList.add('active');
-
-      const { total } = calcFare();
-      const pnr       = 'PR' + Date.now().toString().slice(-8);
-      const bookingId = 'BK' + Date.now();
-
-      const acctEl = document.getElementById('pmAcct');
-      const pinEl  = document.getElementById('pmPin');
-      const cvvEl  = document.getElementById('pmCvv');
-
-      const payload = {
-        passenger_name:   $('pName').value.trim(),
-        passenger_cnic:   $('pCnic').value.trim(),
-        passenger_phone:  $('pPhone').value.trim(),
-        passenger_type:   $('pType').value,
-        train_id:         selectedTrain.id,
-        travel_date:      travelDateGlobal,
-        selected_class:   $('pClass').value,
-        seat_label:       currentSeatLabel,
-        payment_method:   activePM,
-        account_number:   acctEl ? acctEl.value.trim() : '',
-        payment_pin:      pinEl  ? pinEl.value.trim()  : '',
-        cvv:              cvvEl  ? cvvEl.value.trim()  : '',
-        card_digits:      '',
-        user_source:      userSource,
-        user_destination: userDestination,
-        email_id:         loggedInUser,
-        full_name:        loggedInName,
+      $('payBtnWrapper').style.display='none'; $('processingOverlay').classList.add('active');
+      const {total}=calcFare();
+      const pnr='PR'+Date.now().toString().slice(-8), bookingId='BK'+Date.now();
+      const acctEl=document.getElementById('pmAcct'), pinEl=document.getElementById('pmPin'), cvvEl=document.getElementById('pmCvv');
+      const payload={
+        passenger_name:$('pName').value.trim(), passenger_cnic:$('pCnic').value.trim(),
+        passenger_phone:$('pPhone').value.trim(), passenger_type:$('pType').value,
+        train_id:selectedTrain.id, travel_date:travelDateGlobal, selected_class:$('pClass').value,
+        seat_label:currentSeatLabel, payment_method:activePM,
+        account_number:acctEl?acctEl.value.trim():'', payment_pin:pinEl?pinEl.value.trim():'',
+        cvv:cvvEl?cvvEl.value.trim():'', card_digits:'',
+        user_source:userSource, user_destination:userDestination, email_id:loggedInUser, full_name:loggedInName,
       };
-
-      await new Promise(r => setTimeout(r, 2200));
-
-      let serverPnr   = pnr;
-      let serverTotal = total;
-      let serverId    = bookingId;
-
+      await new Promise(r=>setTimeout(r,2200));
+      let serverPnr=pnr, serverTotal=total, serverId=bookingId;
       try {
-        const res  = await fetch(`${API}/confirm-booking`, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(payload) });
-        const data = await res.json();
-        if (res.ok) { serverPnr = data.pnr || pnr; serverTotal = data.total || total; serverId = data.booking_id || bookingId; }
-      } catch {}
-
-      $('processingOverlay').classList.remove('active');
-      $('payBtnWrapper').style.display = '';
-
-      const localBooking = {
-        id:              serverId,
-        pnr:             serverPnr,
-        train_id:        selectedTrain.id,
-        train_name:      selectedTrain.name,
-        train_time:      selectedTrain.time,
-        route:           `${userSource} → ${userDestination}`,
-        passenger_name:  payload.passenger_name,
-        passenger_cnic:  payload.passenger_cnic,
-        passenger_phone: payload.passenger_phone,
-        passenger_type:  payload.passenger_type,
-        travel_date:     travelDateGlobal,
-        selected_class:  payload.selected_class,
-        seat:            currentSeatLabel,
-        total:           serverTotal,
-        user_email:      loggedInUser,
-        booked_at:       new Date().toISOString(),
+        const res=await fetch(`${API}/confirm-booking`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
+        const data=await res.json();
+        if (res.ok) { serverPnr=data.pnr||pnr; serverTotal=data.total||total; serverId=data.booking_id||bookingId; }
+      } catch(_){}
+      $('processingOverlay').classList.remove('active'); $('payBtnWrapper').style.display='';
+      const localBooking={
+        id:serverId, pnr:serverPnr, train_id:selectedTrain.id, train_name:selectedTrain.name,
+        train_time:selectedTrain.time, route:`${userSource} → ${userDestination}`,
+        passenger_name:payload.passenger_name, passenger_cnic:payload.passenger_cnic,
+        passenger_phone:payload.passenger_phone, passenger_type:payload.passenger_type,
+        travel_date:travelDateGlobal, selected_class:payload.selected_class, seat:currentSeatLabel,
+        total:serverTotal, user_email:loggedInUser, booked_at:new Date().toISOString(),
       };
-
-      const allBookings = getAllBookings();
-      allBookings.push(localBooking);
-      saveAllBookings(allBookings);
-      addBookedSeat(selectedTrain.id, payload.selected_class, travelDateGlobal, currentSeatLabel);
-
-      confirmedBookingId = serverId;
-      $('successPnr').textContent   = `PNR: ${serverPnr}`;
-      $('successTotal').textContent = `Rs. ${serverTotal.toLocaleString()}`;
-      goToStep(3);
-      markSeatBookedInMemory(currentSeatLabel);
+      const allBookings=getAllBookings(); allBookings.push(localBooking); saveAllBookings(allBookings);
+      addBookedSeat(selectedTrain.id,payload.selected_class,travelDateGlobal,currentSeatLabel);
+      confirmedBookingId=serverId;
+      $('successPnr').textContent=`PNR: ${serverPnr}`;
+      $('successTotal').textContent=`Rs. ${serverTotal.toLocaleString()}`;
+      goToStep(3); markSeatBookedInMemory(currentSeatLabel);
     });
 
-    function markSeatBookedInMemory(seatLabel) {
+    function markSeatBookedInMemory(seat) {
       for (const coach of Object.values(seatData))
         for (const cabin of coach)
           for (const berth of cabin.berths)
-            if (berth.label === seatLabel) berth.available = false;
+            if (berth.label===seat) berth.available=false;
     }
 
-    /* ════════════════════════════════════════════════════
-       DOWNLOAD TICKET
-    ════════════════════════════════════════════════════ */
+    /* --- Download Ticket --- */
     $('btnGenerateTicket').addEventListener('click', () => {
       if (!isLoggedIn) { showLoginRequired(); return; }
-      if (!confirmedBookingId) { showToast('No booking found', 'error'); return; }
-      const backendUrl = `${API}/download-ticket/${confirmedBookingId}`;
-      fetch(backendUrl, { method:'HEAD' }).then(r => { if (r.ok) window.open(backendUrl, '_blank'); else generateLocalTicket(); }).catch(() => generateLocalTicket());
-      $('bookingModal').style.display = 'none';
+      if (!confirmedBookingId) { showToast('No booking found','error'); return; }
+      const url=`${API}/download-ticket/${confirmedBookingId}`;
+      fetch(url,{method:'HEAD'}).then(r=>{ if(r.ok) window.open(url,'_blank'); else generateLocalTicket(); }).catch(()=>generateLocalTicket());
+      $('bookingModal').style.display='none';
     });
 
     function generateLocalTicket() {
-      const all     = getAllBookings();
-      const booking = all.find(b => b.id === confirmedBookingId);
-      if (!booking) { showToast('Ticket data not found', 'error'); return; }
-      const html = buildTicketHtml(booking, userSource || booking.route.split(' → ')[0], userDestination || booking.route.split(' → ')[1]);
-      const blob = new Blob([html], { type: 'text/html' });
-      window.open(URL.createObjectURL(blob), '_blank');
+      const all=getAllBookings(), booking=all.find(b=>b.id===confirmedBookingId);
+      if (!booking) { showToast('Ticket data not found','error'); return; }
+      const html=buildTicketHtml(booking, userSource||booking.route.split(' → ')[0], userDestination||booking.route.split(' → ')[1]);
+      window.open(URL.createObjectURL(new Blob([html],{type:'text/html'})),'_blank');
     }
 
-    /* ════════════════════════════════════════════════════
-       BOOKED TICKETS MODAL
-    ════════════════════════════════════════════════════ */
+    /* --- Booked Tickets Modal --- */
     $('btnShowBookings').addEventListener('click', loadBookings);
-    $('bookingsModalClose').addEventListener('click', () => $('bookingsModal').style.display = 'none');
-    $('bookingsModal').addEventListener('click', e => { if (e.target === $('bookingsModal')) $('bookingsModal').style.display = 'none'; });
+    $('bookingsModalClose').addEventListener('click', () => $('bookingsModal').style.display='none');
+    $('bookingsModal').addEventListener('click', e => { if (e.target===$('bookingsModal')) $('bookingsModal').style.display='none'; });
 
     async function loadBookings() {
       if (!isLoggedIn) { showLoginRequired(); return; }
-      $('bookingsModal').style.display = 'flex';
-      $('bookingsList').innerHTML = '<p class="loading-text">Loading tickets…</p>';
-
-      let data = null;
+      $('bookingsModal').style.display='flex'; $('bookingsList').innerHTML='<p class="loading-text">Loading tickets…</p>';
+      let data=null;
       try {
-        const res = await fetch(`${API}/get-all-bookings`);
-        if (res.ok) { const all = await res.json(); data = all.filter(b => b.email_id === loggedInUser || b.user_email === loggedInUser); }
-      } catch {}
-
+        const res=await fetch(`${API}/get-all-bookings`);
+        if (res.ok) { const all=await res.json(); data=all.filter(b=>b.email_id===loggedInUser||b.user_email===loggedInUser); }
+      } catch(_){}
       if (!data) {
-        data = getAllBookings().filter(b => b.user_email === loggedInUser);
+        data=getAllBookings().filter(b=>b.user_email===loggedInUser);
       } else {
-        const serverIds  = new Set(data.map(b => b.booking_id || b.id));
-        const localExtra = getAllBookings().filter(b => b.user_email === loggedInUser && !serverIds.has(b.id));
-        data = [...localExtra, ...data.map(b => ({ ...b, id: b.booking_id || b.id, route: b.ticket_route || `${b.user_source} → ${b.user_destination}`, seat: b.seat_label || b.seat, train_name: b.train_name, passenger_name: b.passenger_name, travel_date: typeof b.travel_date === 'string' ? b.travel_date : b.travel_date, selected_class: b.selected_class, passenger_type: b.passenger_type, total: b.total, pnr: b.pnr }))];
+        const sids=new Set(data.map(b=>b.booking_id||b.id));
+        const le=getAllBookings().filter(b=>b.user_email===loggedInUser&&!sids.has(b.id));
+        data=[...le,...data.map(b=>({...b,id:b.booking_id||b.id,route:b.ticket_route||`${b.user_source} → ${b.user_destination}`,seat:b.seat_label||b.seat}))];
       }
-
       if (!data.length) {
-        $('bookingsList').innerHTML = `<div class="empty-bookings"><svg width="52" height="52" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg><p>No tickets booked yet for <strong>${loggedInUser}</strong></p></div>`;
+        $('bookingsList').innerHTML=`<div class="empty-bookings"><svg width="52" height="52" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg><p>No tickets booked yet for <strong>${loggedInUser}</strong></p></div>`;
         return;
       }
-
-      data.sort((a, b) => (b.booked_at || '').localeCompare(a.booked_at || ''));
-      $('bookingsList').innerHTML = data.map(b => `
+      data.sort((a,b)=>(b.booked_at||'').localeCompare(a.booked_at||''));
+      $('bookingsList').innerHTML=data.map(b=>`
         <div class="booking-card">
           <div class="booking-top">
-            <div><h4>${b.train_name || 'Train'}</h4><p class="booking-route">${b.route || '—'}</p></div>
+            <div><h4>${b.train_name||'Train'}</h4><p class="booking-route">${b.route||'—'}</p></div>
             <div class="booking-pnr">PNR: ${b.pnr}</div>
           </div>
           <div class="booking-details">
             <div class="booking-detail"><span>Passenger</span><strong>${b.passenger_name}</strong></div>
             <div class="booking-detail"><span>Date</span><strong>${b.travel_date}</strong></div>
             <div class="booking-detail"><span>Class</span><strong>${b.selected_class}</strong></div>
-            <div class="booking-detail"><span>Seat</span><strong>${b.seat || b.seat_label || '—'}</strong></div>
+            <div class="booking-detail"><span>Seat</span><strong>${b.seat||b.seat_label||'—'}</strong></div>
             <div class="booking-detail"><span>Type</span><strong>${b.passenger_type}</strong></div>
-            <div class="booking-detail"><span>Total</span><strong class="booking-total">Rs. ${(b.total || 0).toLocaleString()}</strong></div>
+            <div class="booking-detail"><span>Total</span><strong class="booking-total">Rs. ${(b.total||0).toLocaleString()}</strong></div>
           </div>
           <div class="booking-actions">
             <button class="btn-download" onclick="downloadBookingTicket('${b.id}')">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
               Download Ticket
             </button>
-            <button class="btn-cancel" onclick="openCancelConfirm('${b.id}', '${b.pnr}')">
+            <button class="btn-cancel" onclick="openCancelConfirm('${b.id}','${b.pnr}')">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
               Cancel
             </button>
@@ -1446,59 +1158,49 @@
     }
 
     function downloadBookingTicket(bookingId) {
-      const backendUrl = `${API}/download-ticket/${bookingId}`;
-      fetch(backendUrl, { method:'HEAD' }).then(r => { if (r.ok) window.open(backendUrl, '_blank'); else generateTicketById(bookingId); }).catch(() => generateTicketById(bookingId));
+      const url=`${API}/download-ticket/${bookingId}`;
+      fetch(url,{method:'HEAD'}).then(r=>{ if(r.ok) window.open(url,'_blank'); else generateTicketById(bookingId); }).catch(()=>generateTicketById(bookingId));
     }
-
     function generateTicketById(bookingId) {
-      const booking = getAllBookings().find(b => b.id === bookingId);
-      if (!booking) { showToast('Ticket data not found', 'error'); return; }
-      const routeParts = (booking.route || '→').split(' → ');
-      window.open(URL.createObjectURL(new Blob([buildTicketHtml(booking, routeParts[0] || '—', routeParts[1] || '—')], { type: 'text/html' })), '_blank');
+      const booking=getAllBookings().find(b=>b.id===bookingId);
+      if (!booking) { showToast('Ticket data not found','error'); return; }
+      const rp=(booking.route||'→').split(' → ');
+      window.open(URL.createObjectURL(new Blob([buildTicketHtml(booking,rp[0]||'—',rp[1]||'—')],{type:'text/html'})),'_blank');
     }
 
-    /* ════════════════════════════════════════════════════
-       TICKET HTML BUILDER
-    ════════════════════════════════════════════════════ */
+    /* --- Ticket Builder --- */
     function buildTicketHtml(booking, src, dst) {
-      const departureTime = booking.train_time || booking.time || '—';
+      const dt=booking.train_time||booking.time||'—';
       return `<!DOCTYPE html>
 <html>
 <head>
 <meta charset="UTF-8">
 <title>E-Ticket - ${booking.pnr}</title>
 <style>
-  * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; color-adjust: exact !important; }
-  body { font-family: 'Gill Sans', Arial, sans-serif; background: #f4f8f5 !important; margin: 0; padding: 32px; color: #0b1f12; }
-  .ticket { max-width: 680px; margin: 0 auto; background: #fff !important; border-radius: 16px; overflow: hidden; box-shadow: 0 8px 40px rgba(0,0,0,0.15); }
-  .ticket-header { background: linear-gradient(135deg, #083d1f, #0d6b36) !important; color: #fff !important; padding: 28px 36px; display: flex; justify-content: space-between; align-items: center; }
-  .ticket-header h1 { font-size: 1.5rem; margin: 0; color: #fff !important; }
-  .ticket-header p  { margin: 4px 0 0; font-size: 0.85rem; opacity: 0.85; color: #fff !important; }
-  .pnr-badge { background: rgba(200,151,42,0.35) !important; border: 2px solid #c8972a; color: #ffe680 !important; border-radius: 8px; padding: 8px 18px; text-align: center; }
-  .pnr-badge span   { display: block; font-size: 0.65rem; letter-spacing: 2px; text-transform: uppercase; opacity: 0.85; }
-  .pnr-badge strong { font-size: 1.1rem; letter-spacing: 2px; }
-  .route-bar { background: linear-gradient(135deg, #d4eedd, #eafaf0) !important; padding: 20px 36px; display: flex; align-items: center; border-bottom: 1px solid rgba(13,107,54,0.15); }
-  .station { flex: 1; }
-  .station span   { font-size: 0.65rem; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: #4a7a56 !important; display: block; }
-  .station strong { font-size: 1.2rem; color: #083d1f !important; }
-  .route-divider  { width: 1px; background: rgba(13,107,54,0.2); height: 40px; margin: 0 24px; flex-shrink: 0; }
-  .departure-col  { text-align: right; flex-shrink: 0; }
-  .departure-col span   { font-size: 0.65rem; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: #4a7a56 !important; display: block; margin-bottom: 4px; }
-  .departure-col strong { font-size: 1.35rem; color: #083d1f !important; font-weight: 800; }
-  .details { padding: 24px 36px; display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 18px; background: #fff !important; }
-  .detail { display: flex; flex-direction: column; gap: 4px; }
-  .detail span   { font-size: 0.65rem; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; color: #6b9478 !important; }
-  .detail strong { font-size: 0.95rem; font-weight: 700; color: #0b1f12 !important; }
-  .total-row { background: linear-gradient(135deg, rgba(200,151,42,0.12), rgba(200,151,42,0.20)) !important; border-top: 2px solid rgba(200,151,42,0.4); padding: 16px 36px; display: flex; justify-content: space-between; align-items: center; }
-  .total-row span   { font-size: 0.85rem; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: #2e5c3a !important; }
-  .total-row strong { font-size: 1.6rem; color: #083d1f !important; font-weight: 800; }
-  .footer { background: #083d1f !important; color: rgba(255,255,255,0.75) !important; padding: 14px 36px; font-size: 0.78rem; display: flex; justify-content: space-between; }
-  .watermark { position: fixed; top: 50%; left: 50%; transform: translate(-50%,-50%) rotate(-30deg); font-size: 5rem; font-weight: 900; color: rgba(8,61,31,0.04) !important; pointer-events: none; z-index: 0; white-space: nowrap; }
-  @media print {
-    * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
-    body { padding: 0 !important; background: #f4f8f5 !important; }
-    .ticket { box-shadow: none; }
-  }
+  *{-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important;color-adjust:exact!important}
+  body{font-family:'Gill Sans',Arial,sans-serif;background:#f4f8f5!important;margin:0;padding:32px;color:#0b1f12}
+  .ticket{max-width:680px;margin:0 auto;background:#fff!important;border-radius:16px;overflow:hidden;box-shadow:0 8px 40px rgba(0,0,0,.15)}
+  .ticket-header{background:linear-gradient(135deg,#083d1f,#0d6b36)!important;color:#fff!important;padding:28px 36px;display:flex;justify-content:space-between;align-items:center}
+  .pnr-badge{background:rgba(200,151,42,.35)!important;border:2px solid #c8972a;color:#ffe680!important;border-radius:8px;padding:8px 18px;text-align:center}
+  .pnr-badge span{display:block;font-size:.65rem;letter-spacing:2px;text-transform:uppercase;opacity:.85}
+  .pnr-badge strong{font-size:1.1rem;letter-spacing:2px}
+  .route-bar{background:linear-gradient(135deg,#d4eedd,#eafaf0)!important;padding:20px 36px;display:flex;align-items:center;border-bottom:1px solid rgba(13,107,54,.15)}
+  .station{flex:1}.station span{font-size:.65rem;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:#4a7a56!important;display:block}
+  .station strong{font-size:1.2rem;color:#083d1f!important}
+  .route-divider{width:1px;background:rgba(13,107,54,.2);height:40px;margin:0 24px;flex-shrink:0}
+  .departure-col{text-align:right;flex-shrink:0}
+  .departure-col span{font-size:.65rem;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:#4a7a56!important;display:block;margin-bottom:4px}
+  .departure-col strong{font-size:1.35rem;color:#083d1f!important;font-weight:800}
+  .details{padding:24px 36px;display:grid;grid-template-columns:1fr 1fr 1fr;gap:18px;background:#fff!important}
+  .detail{display:flex;flex-direction:column;gap:4px}
+  .detail span{font-size:.65rem;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:#6b9478!important}
+  .detail strong{font-size:.95rem;font-weight:700;color:#0b1f12!important}
+  .total-row{background:linear-gradient(135deg,rgba(200,151,42,.12),rgba(200,151,42,.20))!important;border-top:2px solid rgba(200,151,42,.4);padding:16px 36px;display:flex;justify-content:space-between;align-items:center}
+  .total-row span{font-size:.85rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:#2e5c3a!important}
+  .total-row strong{font-size:1.6rem;color:#083d1f!important;font-weight:800}
+  .footer{background:#083d1f!important;color:rgba(255,255,255,.75)!important;padding:14px 36px;font-size:.78rem;display:flex;justify-content:space-between}
+  .watermark{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%) rotate(-30deg);font-size:5rem;font-weight:900;color:rgba(8,61,31,.04)!important;pointer-events:none;z-index:0;white-space:nowrap}
+  @media print{*{-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important}body{padding:0!important;background:#f4f8f5!important}.ticket{box-shadow:none}}
 </style>
 </head>
 <body>
@@ -1507,7 +1209,7 @@
   <div class="ticket-header">
     <div>
       <h1 style="display:flex;align-items:center;gap:14px;margin:0;color:#fff;font-family:'Gill Sans',Arial,sans-serif;">PAKISTAN RAILWAYS</h1>
-      <p style="margin-top:6px;letter-spacing:2.5px;color:rgba(255,255,255,0.85);">E L E C T R O N I C &nbsp; T I C K E T</p>
+      <p style="margin-top:6px;letter-spacing:2.5px;color:rgba(255,255,255,.85);">E L E C T R O N I C &nbsp; T I C K E T</p>
     </div>
     <div class="pnr-badge"><span>PNR</span><strong>${booking.pnr}</strong></div>
   </div>
@@ -1519,8 +1221,7 @@
     <div class="departure-col">
       <span>Departure</span>
       <strong style="display:flex;align-items:center;gap:6px;justify-content:flex-end;">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#c8972a" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-        ${departureTime}
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#c8972a" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>${dt}
       </strong>
     </div>
   </div>
@@ -1528,7 +1229,7 @@
     <div class="detail"><span>Train</span><strong>${booking.train_name}</strong></div>
     <div class="detail"><span>Date</span><strong>${booking.travel_date}</strong></div>
     <div class="detail"><span>Class</span><strong>${booking.selected_class}</strong></div>
-    <div class="detail"><span>Seat</span><strong>${booking.seat || booking.seat_label || '—'}</strong></div>
+    <div class="detail"><span>Seat</span><strong>${booking.seat||booking.seat_label||'—'}</strong></div>
     <div class="detail"><span>Passenger</span><strong>${booking.passenger_name}</strong></div>
     <div class="detail"><span>Type</span><strong>${booking.passenger_type}</strong></div>
     <div class="detail"><span>CNIC</span><strong>${booking.passenger_cnic}</strong></div>
@@ -1537,7 +1238,7 @@
   </div>
   <div class="total-row">
     <span>Total Amount Paid</span>
-    <strong>Rs. ${(booking.total || 0).toLocaleString()}</strong>
+    <strong>Rs. ${(booking.total||0).toLocaleString()}</strong>
     <span>Platform Charges: Rs. 10</span>
   </div>
   <div class="footer">
@@ -1550,46 +1251,31 @@
 </html>`;
     }
 
-    /* ════════════════════════════════════════════════════
-       HELPERS
-    ════════════════════════════════════════════════════ */
-    function formatDate(dateStr) {
-      const d = new Date(dateStr + 'T00:00:00');
-      return d.toLocaleDateString('en-PK', { day:'numeric', month:'short', year:'numeric' });
-    }
-
-    /* ════════════════════════════════════════════════════
-       GLOBAL ENTER KEY HANDLER
-    ════════════════════════════════════════════════════ */
+    /* --- Enter Key Handler --- */
     document.addEventListener('keydown', function(e) {
-      if (e.key !== 'Enter') return;
-      if (!$('cancelConfirmOverlay').classList.contains('hidden')) {
-        if (document.activeElement !== $('cancelPasswordInput')) { e.preventDefault(); executeCancelTicket(); } return;
-      }
-      if (!$('searchLoginOverlay').classList.contains('hidden'))  { e.preventDefault(); $('btnSearchLrLogin').click(); return; }
-      if (!$('loginRequiredOverlay').classList.contains('hidden')){ e.preventDefault(); $('btnLrLogin').click(); return; }
-      if (!$('dateLimitOverlay').classList.contains('hidden'))    { e.preventDefault(); $('btnDateLimitOk').click(); return; }
+      if (e.key!=='Enter') return;
+      if (!$('cancelConfirmOverlay').classList.contains('hidden')) { if (document.activeElement!==$('cancelPasswordInput')) { e.preventDefault(); executeCancelTicket(); } return; }
+      if (!$('searchLoginOverlay').classList.contains('hidden'))   { e.preventDefault(); $('btnSearchLrLogin').click(); return; }
+      if (!$('loginRequiredOverlay').classList.contains('hidden')) { e.preventDefault(); $('btnLrLogin').click(); return; }
+      if (!$('dateLimitOverlay').classList.contains('hidden'))     { e.preventDefault(); $('btnDateLimitOk').click(); return; }
       if (!$('loginOverlay').classList.contains('hidden')) {
-        const authInputs = [$('authEmail'), $('authPassword'), $('authConfirmPass'), $('authName')];
-        if (!authInputs.includes(document.activeElement)) { e.preventDefault(); handleAuthSubmit(); } return;
+        const ai=[$('authEmail'),$('authPassword'),$('authConfirmPass'),$('authName')];
+        if (!ai.includes(document.activeElement)) { e.preventDefault(); handleAuthSubmit(); } return;
       }
-      if ($('bookingModal').style.display === 'flex') {
-        if ($('step1').classList.contains('active')) {
-          if (![$('pName'), $('pCnic'), $('pPhone')].includes(document.activeElement)) { e.preventDefault(); $('btnProceedToPayment').click(); } return;
-        }
+      if ($('bookingModal').style.display==='flex') {
+        if ($('step1').classList.contains('active')) { if (![$('pName'),$('pCnic'),$('pPhone')].includes(document.activeElement)) { e.preventDefault(); $('btnProceedToPayment').click(); } return; }
         if ($('step2').classList.contains('active')) { e.preventDefault(); $('btnPay').click(); return; }
         if ($('step3').classList.contains('active')) { e.preventDefault(); $('btnGenerateTicket').click(); return; }
       }
-      if ($('heroSection').style.display !== 'none') {
-        const tag = document.activeElement ? document.activeElement.tagName : '';
-        if (tag !== 'INPUT' && tag !== 'TEXTAREA' && tag !== 'SELECT') { e.preventDefault(); $('btnSearch').click(); }
+      if ($('heroSection').style.display!=='none') {
+        const tag=document.activeElement?.tagName;
+        if (tag!=='INPUT'&&tag!=='TEXTAREA'&&tag!=='SELECT') { e.preventDefault(); $('btnSearch').click(); }
       }
     });
 
-    ['pName', 'pCnic', 'pPhone'].forEach(id => {
-      $(id).addEventListener('keydown', function(e) { if (e.key === 'Enter') { e.preventDefault(); $('btnProceedToPayment').click(); } });
+    ['pName','pCnic','pPhone'].forEach(id => {
+      $(id).addEventListener('keydown', function(e) { if (e.key==='Enter') { e.preventDefault(); $('btnProceedToPayment').click(); } });
     });
-
   </script>
 </body>
 </html>
