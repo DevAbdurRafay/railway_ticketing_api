@@ -15,9 +15,24 @@
     .pm-btn.active{border-color:#094d27;background:rgba(9,77,39,.07);box-shadow:0 0 0 3px rgba(9,77,39,.1)}
     .pm-fields-wrap{margin-top:4px}
     .pm-fields-wrap .field-group-modal{margin-bottom:14px}
-    .expiry-cvv-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-
-    /* ── PIN Popup ── */
+    .expiry-cvv-row{
+    display:flex;
+    flex-direction:column;
+    gap:12px;
+    width:100%;
+    box-sizing:border-box;
+  }
+    .expiry-cvv-row .field-group-modal{
+      width:100%;
+      min-width:0;
+      box-sizing:border-box;
+    }
+    .expiry-cvv-row .field-group-modal input{
+      width:100%;
+      min-width:0;
+      box-sizing:border-box;
+    }
+      /* ── PIN Popup ── */
     .pin-overlay{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:99999;display:flex;align-items:flex-end;justify-content:center;opacity:0;pointer-events:none;transition:opacity .25s}
     .pin-overlay.visible{opacity:1;pointer-events:all}
     .pin-sheet{background:#f5f5f5;border-radius:22px 22px 0 0;padding:28px 28px 36px;width:100%;max-width:480px;transform:translateY(100%);transition:transform .32s cubic-bezier(.34,1.56,.64,1)}
@@ -63,7 +78,6 @@
   </style>
 </head>
 <body>
-
   <!-- NAVBAR -->
   <nav id="navbar">
     <div class="nav-brand">
@@ -95,7 +109,6 @@
       </button>
     </div>
   </nav>
-
   <!-- AUTH OVERLAY -->
   <div class="login-page-overlay hidden" id="loginOverlay">
     <div class="login-box">
@@ -153,7 +166,6 @@
       <div class="auth-switch" id="authSwitch">Don't have an account? <a onclick="switchAuthMode('signup')">Sign Up</a></div>
     </div>
   </div>
-
   <!-- LOGIN REQUIRED (download) -->
   <div class="login-required-overlay hidden" id="loginRequiredOverlay">
     <div class="login-required-box">
@@ -184,7 +196,6 @@
       </div>
     </div>
   </div>
-
   <!-- DATE LIMIT ERROR -->
   <div class="login-required-overlay hidden" id="dateLimitOverlay" style="z-index:9999">
     <div class="login-required-box" style="border-top:4px solid #e53e3e;max-width:440px">
@@ -197,7 +208,6 @@
       <div class="lr-actions"><button class="btn-lr-login" id="btnDateLimitOk" style="background:#c53030;min-width:120px">OK, Got It</button></div>
     </div>
   </div>
-
   <!-- CANCEL CONFIRM MODAL -->
   <div class="cancel-confirm-overlay hidden" id="cancelConfirmOverlay">
     <div class="cancel-confirm-box">
@@ -614,10 +624,13 @@
     restoreSession(); updateNavState(); restorePageState();
     function restorePageState(){
         if(!isLoggedIn){showPage('hero');return;}
+
         const modalOpen=sessionStorage.getItem('pr_modal_open');
         const modalStep=sessionStorage.getItem('pr_modal_step');
+        const{page,search,trains}=getPageState();
+
+        // Step 3 (confirmed) — ticket step restore karo
         if(modalOpen==='1'&&modalStep==='3'){
-          const{page,search,trains}=getPageState();
           if(page==='results'&&search&&trains){
             userSource=search.source;userDestination=search.dest;travelDateGlobal=search.date;
             renderTrains(trains,search.source,search.dest,search.date);
@@ -635,9 +648,36 @@
           }
           return;
         }
-        const{page,search,trains}=getPageState();
-        if(page==='results'&&search&&trains){ userSource=search.source;userDestination=search.dest;travelDateGlobal=search.date; renderTrains(trains,search.source,search.dest,search.date); }
-        else showPage('hero');
+
+        // Step 1 (passenger) — modal band karo, results page restore karo
+        if(modalOpen==='1'&&modalStep==='1'){
+          if(page==='results'&&search&&trains){
+            userSource=search.source;userDestination=search.dest;travelDateGlobal=search.date;
+            renderTrains(trains,search.source,search.dest,search.date);
+          } else {
+            showPage('hero');
+          }
+          return;
+        }
+
+        // Step 2 (payment) — modal band karo, results page restore karo
+        if(modalOpen==='1'&&modalStep==='2'){
+          if(page==='results'&&search&&trains){
+            userSource=search.source;userDestination=search.dest;travelDateGlobal=search.date;
+            renderTrains(trains,search.source,search.dest,search.date);
+          } else {
+            showPage('hero');
+          }
+          return;
+        }
+
+        // Normal results page restore
+        if(page==='results'&&search&&trains){
+          userSource=search.source;userDestination=search.dest;travelDateGlobal=search.date;
+          renderTrains(trains,search.source,search.dest,search.date);
+        } else {
+          showPage('hero');
+        }
       }
     function showPage(name){
       $('heroSection').style.display=name==='hero'?'flex':'none';
@@ -1067,39 +1107,62 @@
     });
 
     /* ── Booking Modal ── */
-    function openBookingModal(){
+   function openBookingModal(){
       $('modalTrainName').textContent=selectedTrain.name;
       $('pName').value=$('pCnic').value=$('pPhone').value='';
       $('pType').value='Adult';$('pClass').value='AC Business';
       currentSeatLabel='';confirmedBookingId=null;
-      sessionStorage.removeItem('pr_modal_step');
-      sessionStorage.removeItem('pr_modal_open');
+      sessionStorage.setItem('pr_modal_open','1');
+      sessionStorage.setItem('pr_modal_step','1');
       updateFare();goToStep(1);loadSeatLayout();
       $('bookingModal').style.display='flex';
     }
     $('modalClose').addEventListener('click',()=>$('bookingModal').style.display='none');
     $('bookingModal').addEventListener('click',e=>{ if(e.target===$('bookingModal')) $('bookingModal').style.display='none'; });
 
-    function goToStep(n){
-      [1,2,3].forEach(i=>{
-        $(`step${i}`).classList.toggle('active',i===n);
-        const dot=$(`stepDot${i}`);dot.classList.remove('active','done');
-        if(i===n) dot.classList.add('active');else if(i<n) dot.classList.add('done');
-      });
-      [1,2].forEach(i=>$(`stepLine${i}`).classList.toggle('done',i<n));
-    }
+       function goToStep(n){
+          [1,2,3].forEach(i=>{
+            $(`step${i}`).classList.toggle('active',i===n);
+            const dot=$(`stepDot${i}`);
+            dot.classList.remove('active','done');
+            if(i===n){
+              dot.classList.add('active');
+            } else if(i<n){
+              dot.classList.add('done');
+            }
+            if(i===3&&confirmedBookingId&&i!==n){
+              dot.classList.add('done');
+              $(`stepLine2`).classList.add('done');
+            }
+          });
+          [1,2].forEach(i=>$(`stepLine${i}`).classList.toggle('done',i<n));
+        }
 
-    function handleStepClick(n){
-      const dot=$(`stepDot${n}`);
-      if(!dot.classList.contains('done')&&!dot.classList.contains('active')) return;
-      if(n===1 && ($('step2').classList.contains('active')||$('step3').classList.contains('active'))){
-        goToStep(1);
-      }
-      if(n===2 && $('step3').classList.contains('active')){
-        goToStep(2);
-      }
-    }
+        function handleStepClick(n){
+          if(n===1){
+            const dot=$(`stepDot1`);
+            if(dot.classList.contains('active')||dot.classList.contains('done')){
+              goToStep(1);
+            }
+            return;
+          }
 
+          if(n===2){
+            const dot=$(`stepDot2`);
+            if(dot.classList.contains('active')||dot.classList.contains('done')){
+              goToStep(2);
+            }
+            return;
+          }
+
+          if(n===3){
+            if(confirmedBookingId){
+              goToStep(3);
+            }
+            return;
+          }
+        }
+    
     /* ── Seat Layout ── */
     async function loadSeatLayout(){
       const cls=$('pClass').value;
@@ -1195,6 +1258,8 @@
       if(!currentSeatLabel){ showToast('Please select a seat first','error'); return; }
 
       updateFare();initPM();goToStep(2);
+      updateFare();initPM();goToStep(2);
+      sessionStorage.setItem('pr_modal_step','2');
     });
 
     $('btnPay').addEventListener('click', async () => {
@@ -1230,8 +1295,7 @@
       const pnr='PR'+Date.now().toString().slice(-8),bookingId='BK'+Date.now();
       const cfg=PM_CONFIG[activePM];
       const isMobile=cfg.type==='mobile';
-
-      /* Build payload cleanly — no field clashes */
+      
       const payload={
         passenger_name:$('pName').value.trim(),
         passenger_cnic:$('pCnic').value.trim(),
@@ -1242,14 +1306,14 @@
         selected_class:$('pClass').value,
         seat_label:currentSeatLabel,
         payment_method:activePM,
-        /* Mobile fields */
+      
         account_number:isMobile?(document.getElementById('pmMobile')?.value.trim()||''):'',
         payment_pin:enteredPin,
-        /* Card fields — empty for mobile */
+  
         cvv:!isMobile?(document.getElementById('pmCvv')?.value.trim()||''):'',
         card_last4:!isMobile?'0000':'',
         card_expiry:!isMobile?(document.getElementById('pmExpiry')?.value.trim()||''):'',
-        /* User info */
+      
         user_source:userSource,
         user_destination:userDestination,
         email_id:loggedInUser,
@@ -1260,8 +1324,26 @@
       try{
         const res=await fetch(`${API}/confirm-booking`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
         const data=await res.json();
-        if(res.ok){serverPnr=data.pnr||pnr;serverTotal=data.total||total;serverId=data.booking_id||bookingId;}
-      }catch(_){}
+
+        if(!res.ok){
+          $('processingOverlay').classList.remove('active');
+          $('payBtnWrapper').style.display='';
+          $('btnPay').disabled=false;
+          showToast(data.detail||'Booking failed. Please try again.','error');
+          return;
+        }
+
+        serverPnr=data.pnr||pnr;
+        serverTotal=data.total||total;
+        serverId=data.booking_id||bookingId;
+
+      }catch(_){
+        $('processingOverlay').classList.remove('active');
+        $('payBtnWrapper').style.display='';
+        $('btnPay').disabled=false;
+        showToast('Connection error. Please try again.','error');
+        return;
+      }
 
       $('processingOverlay').classList.remove('active');$('payBtnWrapper').style.display='';
 
