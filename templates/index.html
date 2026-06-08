@@ -245,6 +245,9 @@
   <div class="pin-sheet">
 
     <div class="pin-sheet-header">
+      <button onclick="closePinPopup();if(pinResolve){pinResolve(null);pinResolve=null;}" style="background:none;border:none;cursor:pointer;padding:4px 8px 4px 0;display:flex;align-items:center;color:#555;flex-shrink:0" aria-label="Go back">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+      </button>
       <div class="pin-sheet-logo" id="pinSheetLogo" aria-hidden="true">
         <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor"
              stroke-width="2.5"><rect x="1" y="4" width="22" height="16" rx="2"/>
@@ -337,31 +340,27 @@
         <button class="modal-close" id="modalClose">&times;</button>
       </div>
       <div class="modal-body">
-        <div class="step-indicator">
-          <div class="step-dot active" id="stepDot1"><div class="step-dot-circle">1</div><span class="step-dot-label">Passenger</span></div>
-          <div class="step-line" id="stepLine1"></div>
-          <div class="step-dot" id="stepDot2"><div class="step-dot-circle">2</div><span class="step-dot-label">Payment</span></div>
-          <div class="step-line" id="stepLine2"></div>
-          <div class="step-dot" id="stepDot3"><div class="step-dot-circle">3</div><span class="step-dot-label">Confirmed</span></div>
-        </div>
-
+      <div class="step-indicator">
+        <div class="step-dot active" id="stepDot1" onclick="handleStepClick(1)" style="cursor:pointer"><div class="step-dot-circle">1</div><span class="step-dot-label">Passenger</span></div>
+        <div class="step-line" id="stepLine1"></div>
+        <div class="step-dot" id="stepDot2" onclick="handleStepClick(2)" style="cursor:pointer"><div class="step-dot-circle">2</div><span class="step-dot-label">Payment</span></div>
+        <div class="step-line" id="stepLine2"></div>
+        <div class="step-dot" id="stepDot3"><div class="step-dot-circle">3</div><span class="step-dot-label">Confirmed</span></div>
+      </div>
         <!-- STEP 1: Passenger Info -->
         <div class="modal-step active" id="step1">
           <div class="modal-grid">
             <div class="field-group-modal">
               <label>Passenger Name / نام</label>
               <input type="text" id="pName" placeholder="Full name as on CNIC" maxlength="60" oninput="this.value=this.value.replace(/[^A-Za-z ]/g,'')" />
-              <span class="field-hint">Only alphabets — no numbers or symbols</span>
             </div>
             <div class="field-group-modal">
               <label>CNIC Number / شناخت نمبر</label>
               <input type="text" id="pCnic" placeholder="XXXXX-XXXXXXX-X" maxlength="15" oninput="autoFormatCnic(this)" />
-              <span class="field-hint">Format: XXXXX-XXXXXXX-X</span>
             </div>
             <div class="field-group-modal">
               <label>Phone Number / فون</label>
               <input type="text" id="pPhone" placeholder="03XX-XXXXXXX" maxlength="12" oninput="autoFormatPhone(this)" />
-              <span class="field-hint">03XX-XXXXXXX (starts with 0)</span>
             </div>
             <div class="field-group-modal">
               <label>Passenger Type / قسم</label>
@@ -614,11 +613,32 @@
     /* ── Boot ── */
     restoreSession(); updateNavState(); restorePageState();
     function restorePageState(){
-      if(!isLoggedIn){showPage('hero');return;}
-      const{page,search,trains}=getPageState();
-      if(page==='results'&&search&&trains){ userSource=search.source;userDestination=search.dest;travelDateGlobal=search.date; renderTrains(trains,search.source,search.dest,search.date); }
-      else showPage('hero');
-    }
+        if(!isLoggedIn){showPage('hero');return;}
+        const modalOpen=sessionStorage.getItem('pr_modal_open');
+        const modalStep=sessionStorage.getItem('pr_modal_step');
+        if(modalOpen==='1'&&modalStep==='3'){
+          const{page,search,trains}=getPageState();
+          if(page==='results'&&search&&trains){
+            userSource=search.source;userDestination=search.dest;travelDateGlobal=search.date;
+            renderTrains(trains,search.source,search.dest,search.date);
+          }
+          const all=getAllBookings();
+          const last=all[all.length-1];
+          if(last){
+            confirmedBookingId=last.id;
+            $('successPnr').textContent=`PNR: ${last.pnr}`;
+            $('successTotal').textContent=`Rs. ${(last.total||0).toLocaleString()}`;
+            if(selectedTrain===null) selectedTrain={id:last.train_id,name:last.train_name,time:last.train_time,factor:1};
+            $('modalTrainName').textContent=last.train_name||'Booking';
+            goToStep(3);
+            $('bookingModal').style.display='flex';
+          }
+          return;
+        }
+        const{page,search,trains}=getPageState();
+        if(page==='results'&&search&&trains){ userSource=search.source;userDestination=search.dest;travelDateGlobal=search.date; renderTrains(trains,search.source,search.dest,search.date); }
+        else showPage('hero');
+      }
     function showPage(name){
       $('heroSection').style.display=name==='hero'?'flex':'none';
       $('resultsSection').style.display=name==='results'?'block':'none';
@@ -634,26 +654,43 @@
     $('btnAuthSubmit').addEventListener('click',handleAuthSubmit);
     [$('authEmail'),$('authPassword'),$('authConfirmPass'),$('authName')].forEach(inp=>inp.addEventListener('keydown',e=>{ if(e.key==='Enter') handleAuthSubmit(); }));
 
-    function handleAuthSubmit(){
+    async function handleAuthSubmit(){
       const email=$('authEmail').value.trim().toLowerCase(),pass=$('authPassword').value,name=$('authName').value.trim();
       if(!email||!pass){showToast('Please enter email and password','error');return;}
-      if(!email.includes('@')||!email.includes('.')){showToast('Please enter a valid email address','error');return;}
-      const users=getUsers();
-      if(authMode==='signup'){
-        if(!name){showToast('Please enter your full name','error');return;}
-        if(!/^[A-Za-z ]{2,60}$/.test(name)){showToast('Name must contain only English alphabets','error');return;}
-        const{valid}=checkPasswordStrength(pass);
-        if(!valid){showToast('Password must include uppercase, number & special character','error');return;}
-        if(pass!==$('authConfirmPass').value){showToast('Passwords do not match','error');return;}
-        if(users[email]){showToast('Email already registered. Please login.','error');return;}
-        users[email]={name,password:pass,createdAt:new Date().toISOString()};
-        saveUsers(users);loginUser(email,name,pass);showToast(`Account created! Welcome, ${name} 🎉`,'success');
-      } else {
-        if(!users[email]){showToast('No account found. Please sign up first.','error');return;}
-        if(users[email].password!==pass){showToast('Incorrect password / غلط پاس ورڈ','error');return;}
-        loginUser(email,users[email].name,pass);showToast(`Welcome back, ${users[email].name} 👋`,'success');
+      if(!/^[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.(com|net|org|edu|gov|pk)$/i.test(email)){showToast('Valid email required','error');return;}
+
+      $('btnAuthSubmit').disabled=true;
+      $('btnAuthSubmit').textContent='Please wait…';
+
+      try{
+        if(authMode==='signup'){
+          if(!name){showToast('Please enter your full name','error');return;}
+          if(!/^[A-Za-z ]{2,60}$/.test(name)){showToast('Name must contain only English alphabets','error');return;}
+          const{valid}=checkPasswordStrength(pass);
+          if(!valid){showToast('Password must include uppercase, number & special character','error');return;}
+          if(pass!==$('authConfirmPass').value){showToast('Passwords do not match','error');return;}
+
+          const res=await fetch(`${API}/auth/signup`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email,password:pass,name})});
+          const data=await res.json();
+          if(!res.ok){showToast(data.detail||'Signup failed','error');return;}
+          loginUser(email,data.name,pass);
+          showToast(`Account created! Welcome, ${data.name} 🎉`,'success');
+
+        } else {
+          const res=await fetch(`${API}/auth/login`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email,password:pass})});
+          const data=await res.json();
+          if(!res.ok){showToast(data.detail||'Login failed','error');return;}
+          loginUser(email,data.name,pass);
+          showToast(`Welcome back, ${data.name} 👋`,'success');
+        }
+        $('loginOverlay').classList.add('hidden');
+
+      } catch(_){
+        showToast('Connection error. Please try again.','error');
+      } finally {
+        $('btnAuthSubmit').disabled=false;
+        $('btnAuthSubmit').textContent=authMode==='signup'?'Sign Up / رجسٹر کریں':'Login / لاگ ان';
       }
-      $('loginOverlay').classList.add('hidden');
     }
     function loginUser(email,name,pass){ isLoggedIn=true;loggedInUser=email;loggedInName=name;userPassword=pass;saveSession(email,name,pass);updateNavState(); }
     function updateNavState(){
@@ -854,7 +891,6 @@
             <label>${cfg.acctLabel} (11 digits)</label>
             <input type="text" id="pmMobile" placeholder="${cfg.acctPH}" maxlength="11" inputmode="numeric"
               oninput="this.value=this.value.replace(/[^\\d]/g,'').slice(0,11)" />
-            <span class="field-hint">Must start with 03, exactly 11 digits, no dashes</span>
           </div>`;
       } else {
         /* Visa / MasterCard: Expiry + CVV only (no card_last4 — backend accepts empty for cards) */
@@ -864,23 +900,50 @@
               <label>Expiry Date (MM/YY)</label>
               <input type="text" id="pmExpiry" placeholder="MM/YY" maxlength="5" inputmode="numeric"
                 oninput="autoFormatExpiry(this)" />
-              <span class="field-hint">e.g. 08/27</span>
             </div>
             <div class="field-group-modal">
               <label>CVV (4 digits)</label>
               <input type="password" id="pmCvv" placeholder="XXXX" maxlength="4" inputmode="numeric"
                 oninput="this.value=this.value.replace(/[^\\d]/g,'').slice(0,4)" />
-              <span class="field-hint">Back of your card</span>
             </div>
           </div>`;
       }
     }
 
     function autoFormatExpiry(input){
-      let v=input.value.replace(/[^\d]/g,'');
-      if(v.length>2) v=v.slice(0,2)+'/'+v.slice(2,4);
-      input.value=v;
-    }
+  let v=input.value.replace(/[^\d]/g,'');
+  if(v.length>2) v=v.slice(0,2)+'/'+v.slice(2,4);
+  input.value=v;
+  input.style.borderColor='';
+  if(input._expiryTimer) clearTimeout(input._expiryTimer);
+
+  if(v.length===5){
+    input._expiryTimer=setTimeout(()=>{
+      const mm=parseInt(v.slice(0,2));
+      const yy=parseInt(v.slice(3,5));
+      const now=new Date();
+      const currentYY=now.getFullYear()%100;
+      const currentMM=now.getMonth()+1;
+
+      if(mm<1||mm>12){
+        input.style.borderColor='#c00';
+        showToast('Invalid month — must be 01 to 12','error');
+        return;
+      }
+      if(yy<currentYY||(yy===currentYY&&mm<currentMM)){
+        input.style.borderColor='#c00';
+        showToast('Card is expired — invalid expiry date','error');
+        return;
+      }
+      if(yy>40){
+        input.style.borderColor='#c00';
+        showToast('Invalid year — must be between 26 and 40','error');
+        return;
+      }
+      input.style.borderColor='var(--green)';
+    },600);
+  }
+}
 
     function initPM(){ activePM='JazzCash';document.querySelectorAll('.pm-btn').forEach(b=>b.classList.toggle('active',b.dataset.method==='JazzCash'));renderPMFields(); }
 
@@ -890,13 +953,34 @@
           const mob=document.getElementById('pmMobile')?.value.trim()||'';
           if(!/^03\d{9}$/.test(mob)){showToast('Mobile number must be exactly 11 digits starting with 03','error');return false;}
         } else {
-          const exp=document.getElementById('pmExpiry')?.value.trim()||'';
-          const cvv=document.getElementById('pmCvv')?.value.trim()||'';
-          if(!/^\d{2}\/\d{2}$/.test(exp)){showToast('Expiry date must be in MM/YY format','error');return false;}
-          if(cvv.length!==4){showToast('CVV must be exactly 4 digits','error');return false;}
-          /* card_last4 backend requires \d{4} — generate a placeholder so validation passes */
-          if(!window._cardLast4Dummy) window._cardLast4Dummy='0000';
+        const exp=document.getElementById('pmExpiry')?.value.trim()||'';
+        const cvv=document.getElementById('pmCvv')?.value.trim()||'';
+        if(!/^\d{2}\/\d{2}$/.test(exp)){
+          showToast('Expiry date must be in MM/YY format — e.g. 08/27','error');
+          return false;
         }
+        const mm=parseInt(exp.slice(0,2));
+        const yy=parseInt(exp.slice(3,5));
+        const now=new Date();
+        const currentYY=now.getFullYear()%100;
+        const currentMM=now.getMonth()+1;
+        if(mm<1||mm>12){
+          showToast('Invalid month — must be 01 to 12','error');
+          return false;
+        }
+        if(yy<currentYY||(yy===currentYY&&mm<currentMM)){
+          showToast('Card is expired','error');
+          return false;
+        }
+        if(yy>40){
+          showToast('Invalid year must be in (2026-2040)','error');
+          return false;
+        }
+        if(cvv.length!==4){
+          showToast('CVV must be exactly 4 digits','error');
+          return false;
+        }
+      }
         return true;
       }
 
@@ -958,10 +1042,16 @@
         $('pinOverlay').classList.add('visible');
       });
     }
-      function closePinPopup() {
-         $('pinOverlay').classList.remove('visible');
-      
-    }
+      function closePinPopup(){
+        $('pinOverlay').classList.remove('visible');
+      }
+      $('pinOverlay').addEventListener('click',function(e){
+        if(e.target===$('pinOverlay')){
+          closePinPopup();
+          if(pinResolve){pinResolve(null);pinResolve=null;}
+          $('btnPay').disabled=false;
+        }
+      });
 
       $('btnPinOk').addEventListener('click', () => {
       const len = PM_CONFIG[activePM].pinLen;
@@ -982,6 +1072,8 @@
       $('pName').value=$('pCnic').value=$('pPhone').value='';
       $('pType').value='Adult';$('pClass').value='AC Business';
       currentSeatLabel='';confirmedBookingId=null;
+      sessionStorage.removeItem('pr_modal_step');
+      sessionStorage.removeItem('pr_modal_open');
       updateFare();goToStep(1);loadSeatLayout();
       $('bookingModal').style.display='flex';
     }
@@ -995,6 +1087,17 @@
         if(i===n) dot.classList.add('active');else if(i<n) dot.classList.add('done');
       });
       [1,2].forEach(i=>$(`stepLine${i}`).classList.toggle('done',i<n));
+    }
+
+    function handleStepClick(n){
+      const dot=$(`stepDot${n}`);
+      if(!dot.classList.contains('done')&&!dot.classList.contains('active')) return;
+      if(n===1 && ($('step2').classList.contains('active')||$('step3').classList.contains('active'))){
+        goToStep(1);
+      }
+      if(n===2 && $('step3').classList.contains('active')){
+        goToStep(2);
+      }
     }
 
     /* ── Seat Layout ── */
@@ -1074,14 +1177,23 @@
       $('payAmount').textContent=`Rs. ${total.toLocaleString()}`;
     }
 
-    /* ── Proceed to Payment ── */
     $('btnProceedToPayment').addEventListener('click',()=>{
       const name=$('pName').value.trim(),cnic=$('pCnic').value.trim(),phone=$('pPhone').value.trim();
-      if(!name){showToast('Passenger name is required','error');return;}
-      if(!/^[A-Za-z ]{2,60}$/.test(name)){showToast('Name: only English alphabets & spaces allowed','error');return;}
-      if(!/^\d{5}-\d{7}-\d$/.test(cnic)){showToast('CNIC must be in XXXXX-XXXXXXX-X format','error');return;}
-      if(!/^0\d{3}-\d{7}$/.test(phone)){showToast('Phone must be in 03XX-XXXXXXX format','error');return;}
-      if(!currentSeatLabel){showToast('Please select a seat first','error');return;}
+      
+      if(!name){ showToast('Please enter passenger name','error'); $('pName').style.borderColor='#c00'; return; }
+      if(!/^[A-Za-z ]{2,60}$/.test(name)){ showToast('Invalid name — alphabets only','error'); $('pName').style.borderColor='#c00'; return; }
+      $('pName').style.borderColor='var(--green)';
+
+      if(!cnic){ showToast('Please enter CNIC number','error'); $('pCnic').style.borderColor='#c00'; return; }
+      if(!/^\d{5}-\d{7}-\d$/.test(cnic)){ showToast('Invalid CNIC — use XXXXX-XXXXXXX-X format','error'); $('pCnic').style.borderColor='#c00'; return; }
+      $('pCnic').style.borderColor='var(--green)';
+
+      if(!phone){ showToast('Please enter phone number','error'); $('pPhone').style.borderColor='#c00'; return; }
+      if(!/^0\d{3}-\d{7}$/.test(phone)){ showToast('Invalid phone — use 03XX-XXXXXXX format','error'); $('pPhone').style.borderColor='#c00'; return; }
+      $('pPhone').style.borderColor='var(--green)';
+
+      if(!currentSeatLabel){ showToast('Please select a seat first','error'); return; }
+
       updateFare();initPM();goToStep(2);
     });
 
@@ -1167,7 +1279,9 @@
       $('successPnr').textContent=`PNR: ${serverPnr}`;
       $('successTotal').textContent=`Rs. ${serverTotal.toLocaleString()}`;
       goToStep(3);markSeatBookedInMemory(currentSeatLabel);
-    }
+      sessionStorage.setItem('pr_modal_step','3');
+      sessionStorage.setItem('pr_modal_open','1');
+          }
 
     function markSeatBookedInMemory(seat){
       for(const coach of Object.values(seatData))

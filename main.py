@@ -237,7 +237,7 @@ class LoginRequest(BaseModel):
     @classmethod
     def validate_email(cls, v):
         v = v.strip().lower()
-        if not re.fullmatch(r"[^@\s]+@[^@\s]+\.[^@\s]+", v):
+        if not re.fullmatch(r"[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.(com|net|org|edu|gov|pk)$", v):
             raise ValueError("Please provide a valid email address.")
         return v
 
@@ -343,6 +343,47 @@ async def _insert_payment(conn, email:str, booking_id:str, amount:float,
 @app.get("/", response_class=HTMLResponse)
 async def serve_frontend(request: Request):
     return templates.TemplateResponse(request=request, name="index.html")
+
+class AuthRequest(BaseModel):
+    email: str
+    password: str
+    name: str = ""
+
+    @field_validator("email")
+    @classmethod
+    def validate_email(cls, v):
+        v = v.strip().lower()
+        if not re.fullmatch(r"[^@\s]+@[^@\s]+\.[^@\s]+", v):
+            raise ValueError("Please provide a valid email address.")
+        return v
+
+
+@app.post("/auth/signup")
+async def auth_signup(data: AuthRequest):
+    async with db_pool.acquire() as conn:
+        existing = await conn.fetchrow("SELECT id FROM users WHERE email=$1", data.email)
+        if existing:
+            raise HTTPException(status_code=409, detail="Email already registered. Please login.")
+        if not re.fullmatch(r"[A-Za-z ]{2,60}", data.name.strip()):
+            raise HTTPException(status_code=400, detail="Name must contain only English alphabets (2-60 chars).")
+        pw_hash = hashlib.sha256(data.password.encode()).hexdigest()
+        await conn.execute(
+            "INSERT INTO users (email, password_hash, full_name) VALUES ($1,$2,$3)",
+            data.email, pw_hash, data.name.strip()
+        )
+    return {"status": "ok", "email": data.email, "name": data.name.strip()}
+
+
+@app.post("/auth/login")
+async def auth_login(data: AuthRequest):
+    async with db_pool.acquire() as conn:
+        user = await conn.fetchrow("SELECT * FROM users WHERE email=$1", data.email)
+        if not user:
+            raise HTTPException(status_code=404, detail="No account found. Please sign up first.")
+        pw_hash = hashlib.sha256(data.password.encode()).hexdigest()
+        if user["password_hash"] != pw_hash:
+            raise HTTPException(status_code=401, detail="Incorrect password / غلط پاس ورڈ")
+    return {"status": "ok", "email": data.email, "name": user["full_name"] or ""}
 
 @app.get("/get-stations")
 def get_stations():
