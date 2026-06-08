@@ -1240,7 +1240,6 @@ nav#navbar::after {
   transition: background var(--transition), border-color var(--transition), transform var(--transition);
 }
 .btn-cancel:hover { background: rgba(200,0,0,0.09); border-color: rgba(200,0,0,0.45); transform: translateY(-2px); }
-
 .empty-bookings { text-align: center; padding: 60px 20px; color: var(--text-light); display: flex; flex-direction: column; align-items: center; gap: 16px; }
 .empty-bookings svg { opacity: 0.32; }
 .empty-bookings p { font-size: 1.1rem; font-weight: 600; }

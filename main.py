@@ -517,7 +517,7 @@ async def delete_booking(booking_id: str):
         async with db_pool.acquire() as conn:
             b = await conn.fetchrow("SELECT * FROM bookings WHERE booking_id=$1 AND status='CONFIRMED'", booking_id)
             if not b:
-                raise HTTPException(404, "Booking not found or already cancelled.")
+                raise HTTPException(404, "Booking not found or already cancelled")
             b               = dict(b)
             total_amount    = float(b["total"])
             refunded_amount = round(total_amount * REFUND_PERCENT, 2)
