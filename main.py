@@ -3,20 +3,32 @@ from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from pydantic import BaseModel, field_validator, model_validator
-import re, random, hashlib, calendar
-from datetime import date, datetime
+import re, random, hashlib, calendar, secrets, smtplib, ssl
+from email.mime.text import MIMEText
+from email.utils import formataddr
+from datetime import date, datetime, timedelta, timezone
 import asyncpg, os
 from contextlib import asynccontextmanager
 from dotenv import load_dotenv
+from pathlib import Path
 from typing import Optional, Literal
 
-load_dotenv()
-DATABASE_URL = os.getenv("DATABASE_URL")
+load_dotenv(dotenv_path=Path(__file__).resolve().parent / ".env")
+DATABASE_URL      = os.getenv("DATABASE_URL")
+SMTP_EMAIL        = os.getenv("SMTP_EMAIL")
+SMTP_APP_PASSWORD = os.getenv("SMTP_APP_PASSWORD")
 db_pool: asyncpg.Pool = None
+
+# ── Email OTP Config ──────────────────────────────────────
+OTP_EXPIRY_MINUTES          = 5
+OTP_RESEND_COOLDOWN_SECONDS = 30
+OTP_MAX_ATTEMPTS            = 5
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     global db_pool
+    print(f"[DEBUG] SMTP_EMAIL = {SMTP_EMAIL!r}")
+    print(f"[DEBUG] SMTP_APP_PASSWORD set? = {bool(SMTP_APP_PASSWORD)} (length={len(SMTP_APP_PASSWORD) if SMTP_APP_PASSWORD else 0})")
     db_pool = await asyncpg.create_pool(
         dsn=DATABASE_URL, min_size=1, max_size=5,
         statement_cache_size=0, ssl="require",
@@ -176,6 +188,63 @@ async def _upsert_user(conn, email: str, full_name: str, phone: str):
         email, full_name or "", phone or "",
     )
 
+def _generate_otp() -> str:
+    """4-digit numeric OTP, cryptographically random (0000-9999)."""
+    return f"{secrets.randbelow(10000):04d}"
+
+def _send_otp_email(to_email: str, name: str, otp_code: str, purpose: str):
+    action  = "complete your account signup" if purpose == "SIGNUP" else "verify this login from a new device"
+    subject = "Your Pakistan Railways verification code"
+    greeting = f"Assalam-o-Alaikum {name}," if name else "Assalam-o-Alaikum,"
+    body = f"""{greeting}
+
+Your verification code to {action} on Pakistan Railways — Passenger Portal is:
+
+    {otp_code}
+
+This code is valid for {OTP_EXPIRY_MINUTES} minutes and can only be used once.
+
+If you did not request this code, you can safely ignore this email — no changes will be made to your account.
+
+— Pakistan Railways Passenger Portal
+This is an automated message, please do not reply to this email.
+"""
+    if not SMTP_EMAIL or not SMTP_APP_PASSWORD:
+        raise RuntimeError("SMTP_EMAIL / SMTP_APP_PASSWORD not configured on the server.")
+
+    msg = MIMEText(body, "plain", "utf-8")
+    msg["Subject"] = subject
+    msg["From"]    = formataddr(("Pakistan Railways", SMTP_EMAIL))
+    msg["To"]      = to_email
+
+    context = ssl.create_default_context()
+    with smtplib.SMTP_SSL("smtp.gmail.com", 465, context=context) as server:
+        server.login(SMTP_EMAIL, SMTP_APP_PASSWORD)
+        server.sendmail(SMTP_EMAIL, to_email, msg.as_string())
+
+async def _create_and_send_otp(conn, email: str, name: str, purpose: str):
+    """Generates a fresh OTP, stores it, and emails it — with a resend cooldown."""
+    last = await conn.fetchrow(
+        "SELECT created_at FROM email_otps WHERE email=$1 AND purpose=$2 ORDER BY created_at DESC LIMIT 1",
+        email, purpose
+    )
+    if last:
+        elapsed = (datetime.now(timezone.utc) - last["created_at"]).total_seconds()
+        if elapsed < OTP_RESEND_COOLDOWN_SECONDS:
+            wait = int(OTP_RESEND_COOLDOWN_SECONDS - elapsed)
+            raise HTTPException(429, f"Please wait {wait}s before requesting another code.")
+
+    otp_code   = _generate_otp()
+    expires_at = datetime.now(timezone.utc) + timedelta(minutes=OTP_EXPIRY_MINUTES)
+    await conn.execute(
+        "INSERT INTO email_otps (email, otp_code, purpose, expires_at) VALUES ($1,$2,$3,$4)",
+        email, otp_code, purpose, expires_at
+    )
+    try:
+        _send_otp_email(email, name or "", otp_code, purpose)
+    except Exception as e:
+        raise HTTPException(500, f"Failed to send verification email: {str(e)}")
+
 async def _insert_payment(conn, email: str, booking_id: str, amount: float,
                            payment_method: str, account_number: str = "",
                            card_last4: str = "", card_expiry: str = "", cvv: str = ""):
@@ -239,6 +308,38 @@ class SignupRequest(BaseModel):
         if errors:
             raise ValueError("Password must contain: " + ", ".join(errors))
         return v
+
+class LoginRequest(AuthRequest):
+    device_id: str = ""
+
+class OTPVerifyRequest(BaseModel):
+    email:     str
+    otp_code:  str
+    purpose:   Literal["SIGNUP", "LOGIN"]
+    device_id: str = ""
+    name:      str = ""
+
+    @field_validator("email")
+    @classmethod
+    def validate_email(cls, v):
+        return v.strip().lower()
+
+    @field_validator("otp_code")
+    @classmethod
+    def validate_otp(cls, v):
+        v = v.strip()
+        if not re.fullmatch(r"\d{4}", v):
+            raise ValueError("Code must be 4 digits.")
+        return v
+
+class OTPResendRequest(BaseModel):
+    email:   str
+    purpose: Literal["SIGNUP", "LOGIN"]
+
+    @field_validator("email")
+    @classmethod
+    def validate_email(cls, v):
+        return v.strip().lower()
 
 class BookingData(BaseModel):
     passenger_name:  str
@@ -315,26 +416,97 @@ async def serve_frontend(request: Request):
 @app.post("/auth/signup")
 async def auth_signup(data: AuthRequest):
     async with db_pool.acquire() as conn:
-        if await conn.fetchrow("SELECT id FROM users WHERE email=$1", data.email):
+        existing = await conn.fetchrow("SELECT id, is_verified FROM users WHERE email=$1", data.email)
+        if existing and existing["is_verified"]:
             raise HTTPException(409, "Email already registered. Please login.")
         if not re.fullmatch(r"[A-Za-z ]{2,60}", data.name.strip()):
             raise HTTPException(400, "Name must be English alphabets only (2–60 chars).")
         pw_hash = hashlib.sha256(data.password.encode()).hexdigest()
         await conn.execute(
-            "INSERT INTO users (email, password_hash, full_name) VALUES ($1,$2,$3)",
+            """INSERT INTO users (email, password_hash, full_name, is_verified) VALUES ($1,$2,$3,FALSE)
+               ON CONFLICT (email) DO UPDATE SET
+                 password_hash = EXCLUDED.password_hash,
+                 full_name     = EXCLUDED.full_name,
+                 updated_at    = NOW()""",
             data.email, pw_hash, data.name.strip()
         )
-    return {"status":"ok","email":data.email,"name":data.name.strip()}
+        await _create_and_send_otp(conn, data.email, data.name.strip(), "SIGNUP")
+    return {"status":"otp_required","email":data.email,"name":data.name.strip(),"purpose":"SIGNUP"}
 
 @app.post("/auth/login")
-async def auth_login(data: AuthRequest):
+async def auth_login(data: LoginRequest):
     async with db_pool.acquire() as conn:
         user = await conn.fetchrow("SELECT * FROM users WHERE email=$1", data.email)
         if not user:
             raise HTTPException(404, "No account found. Please sign up first.")
         if user["password_hash"] != hashlib.sha256(data.password.encode()).hexdigest():
             raise HTTPException(401, "Incorrect password / غلط پاس ورڈ")
-    return {"status":"ok","email":data.email,"name":user["full_name"] or ""}
+
+        # Email never verified (e.g. abandoned signup) — verify it first
+        if not user["is_verified"]:
+            await _create_and_send_otp(conn, data.email, user["full_name"], "SIGNUP")
+            return {"status":"otp_required","email":data.email,"name":user["full_name"] or "","purpose":"SIGNUP"}
+
+        # Known/trusted device — skip OTP
+        device_id = data.device_id.strip()
+        if device_id:
+            trusted = await conn.fetchrow(
+                "SELECT id FROM trusted_devices WHERE email=$1 AND device_id=$2", data.email, device_id
+            )
+            if trusted:
+                await conn.execute(
+                    "UPDATE trusted_devices SET last_used_at=NOW() WHERE email=$1 AND device_id=$2",
+                    data.email, device_id
+                )
+                return {"status":"ok","email":data.email,"name":user["full_name"] or ""}
+
+        # New / unknown device — require OTP
+        await _create_and_send_otp(conn, data.email, user["full_name"], "LOGIN")
+    return {"status":"otp_required","email":data.email,"name":user["full_name"] or "","purpose":"LOGIN"}
+
+@app.post("/auth/verify-otp")
+async def auth_verify_otp(data: OTPVerifyRequest):
+    async with db_pool.acquire() as conn:
+        row = await conn.fetchrow(
+            """SELECT * FROM email_otps WHERE email=$1 AND purpose=$2 AND is_used=FALSE
+               ORDER BY created_at DESC LIMIT 1""",
+            data.email, data.purpose
+        )
+        if not row:
+            raise HTTPException(400, "No active code found. Please request a new one.")
+        if row["expires_at"] < datetime.now(timezone.utc):
+            raise HTTPException(400, "Code expired. Please request a new one.")
+        if row["attempts"] >= OTP_MAX_ATTEMPTS:
+            raise HTTPException(429, "Too many incorrect attempts. Please request a new code.")
+        if row["otp_code"] != data.otp_code:
+            await conn.execute("UPDATE email_otps SET attempts = attempts + 1 WHERE id=$1", row["id"])
+            remaining = OTP_MAX_ATTEMPTS - (row["attempts"] + 1)
+            raise HTTPException(400, f"Incorrect code. {max(remaining,0)} attempt(s) left.")
+
+        await conn.execute("UPDATE email_otps SET is_used=TRUE WHERE id=$1", row["id"])
+
+        if data.purpose == "SIGNUP":
+            await conn.execute("UPDATE users SET is_verified=TRUE WHERE email=$1", data.email)
+
+        user = await conn.fetchrow("SELECT full_name FROM users WHERE email=$1", data.email)
+
+        device_id = data.device_id.strip()
+        if device_id:
+            await conn.execute(
+                """INSERT INTO trusted_devices (email, device_id) VALUES ($1,$2)
+                   ON CONFLICT (email, device_id) DO UPDATE SET last_used_at=NOW()""",
+                data.email, device_id
+            )
+    return {"status":"ok","email":data.email,"name":(user["full_name"] if user else None) or data.name or ""}
+
+@app.post("/auth/resend-otp")
+async def auth_resend_otp(data: OTPResendRequest):
+    async with db_pool.acquire() as conn:
+        user = await conn.fetchrow("SELECT full_name FROM users WHERE email=$1", data.email)
+        if not user:
+            raise HTTPException(404, "No account found for this email.")
+        await _create_and_send_otp(conn, data.email, user["full_name"], data.purpose)
+    return {"status":"sent","email":data.email}
 
 @app.get("/get-stations")
 def get_stations():

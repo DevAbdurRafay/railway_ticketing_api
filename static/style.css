@@ -413,6 +413,62 @@ nav#navbar::after {
   text-decoration: underline; text-underline-offset: 3px;
 }
 
+/* ── Email OTP Verification Step ── */
+.auth-form-step.hidden { display: none; }
+.otp-step { display: block; }
+.otp-step.hidden { display: none; }
+
+.otp-icon {
+  width: 60px; height: 60px; margin: 0 auto 18px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--gold) 0%, var(--gold-light) 100%);
+  display: flex; align-items: center; justify-content: center;
+  box-shadow: 0 8px 28px rgba(200, 151, 42, 0.35);
+}
+.otp-icon svg { width: 28px; height: 28px; color: var(--green-dark); }
+
+.otp-msg {
+  text-align: center; font-size: 0.92rem; color: var(--text-mid);
+  margin-bottom: 22px; line-height: 1.6;
+}
+.otp-msg strong { color: var(--green-dark); font-weight: 700; }
+
+.otp-inputs {
+  display: flex; justify-content: center; gap: 12px; margin-bottom: 10px;
+}
+.otp-box {
+  width: 54px; height: 60px;
+  text-align: center; font-size: 1.6rem; font-weight: 800;
+  border: 2px solid rgba(13, 107, 54, 0.2);
+  border-radius: var(--radius-sm);
+  background: rgba(244, 248, 245, 0.85);
+  color: var(--green-dark);
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  outline: none;
+  transition: border-color var(--transition), box-shadow var(--transition), background var(--transition);
+}
+.otp-box:focus {
+  border-color: var(--green); background: var(--white);
+  box-shadow: 0 0 0 4px rgba(13,107,54,0.10), 0 4px 14px rgba(13,107,54,0.08);
+}
+
+.otp-error {
+  text-align: center; font-size: 0.78rem; font-weight: 700;
+  color: #c62828; min-height: 18px; margin-bottom: 6px;
+}
+
+.otp-resend-row {
+  text-align: center; margin-top: 16px;
+  font-size: 0.85rem; color: var(--text-light); font-weight: 500;
+}
+.otp-resend-row b { color: var(--green-dark); }
+.otp-resend-link {
+  color: var(--green); font-weight: 700; cursor: pointer;
+  text-decoration: underline; text-underline-offset: 3px;
+}
+.otp-resend-link.hidden { display: none; }
+#otpResendHint.hidden { display: none; }
+
 /* ═══════════════════════════════════════════════════════════
    LOGIN REQUIRED POPUP
 ════════════════════════════════════════════════════════════ */

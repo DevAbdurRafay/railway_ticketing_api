@@ -118,52 +118,76 @@
       </div>
       <h2 id="authTitle">Welcome Back</h2>
       <p class="login-sub" id="authSubtitle">Pakistan Railways — Passenger Portal</p>
-      <div class="auth-tabs">
-        <button class="auth-tab active" id="tabLogin" onclick="switchAuthMode('login')">Login / لاگ ان</button>
-        <button class="auth-tab" id="tabSignup" onclick="switchAuthMode('signup')">Sign Up / رجسٹر</button>
-      </div>
-      <div class="login-field" id="fieldName" style="display:none">
-        <label>Full Name / پورا نام</label>
-        <input type="text" id="authName" placeholder="Your full name (alphabets only)" maxlength="60" oninput="this.value=this.value.replace(/[^A-Za-z ]/g,'')" />
-      </div>
-      <div class="login-field">
-        <label>Email Address / ای میل</label>
-        <input type="email" id="authEmail" placeholder="yourname@email.com" />
-      </div>
-      <div class="login-field">
-        <label>Password / پاس ورڈ</label>
-        <div class="pass-input-wrap">
-          <input type="password" id="authPassword" placeholder="••••••••" />
-          <button type="button" class="eye-btn" onclick="toggleEye('authPassword',this)" tabindex="-1">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
-          </button>
+
+      <div id="authFormStep" class="auth-form-step">
+        <div class="auth-tabs">
+          <button class="auth-tab active" id="tabLogin" onclick="switchAuthMode('login')">Login / لاگ ان</button>
+          <button class="auth-tab" id="tabSignup" onclick="switchAuthMode('signup')">Sign Up / رجسٹر</button>
         </div>
-        <div id="signupStrengthWrap" style="display:none">
-          <div class="password-strength-bar">
-            <div class="psb-seg" id="psb1"></div><div class="psb-seg" id="psb2"></div>
-            <div class="psb-seg" id="psb3"></div><div class="psb-seg" id="psb4"></div>
+        <div class="login-field" id="fieldName" style="display:none">
+          <label>Full Name / پورا نام</label>
+          <input type="text" id="authName" placeholder="Your full name (alphabets only)" maxlength="60" oninput="this.value=this.value.replace(/[^A-Za-z ]/g,'')" />
+        </div>
+        <div class="login-field">
+          <label>Email Address / ای میل</label>
+          <input type="email" id="authEmail" placeholder="yourname@email.com" />
+        </div>
+        <div class="login-field">
+          <label>Password / پاس ورڈ</label>
+          <div class="pass-input-wrap">
+            <input type="password" id="authPassword" placeholder="••••••••" />
+            <button type="button" class="eye-btn" onclick="toggleEye('authPassword',this)" tabindex="-1">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+            </button>
           </div>
-          <div class="pass-req-list" id="passReqList">
-            <span class="pass-req" id="req-upper">Uppercase</span>
-            <span class="pass-req" id="req-number">Number</span>
-            <span class="pass-req" id="req-special">Special char</span>
-            <span class="pass-req" id="req-length">8+ chars</span>
+          <div id="signupStrengthWrap" style="display:none">
+            <div class="password-strength-bar">
+              <div class="psb-seg" id="psb1"></div><div class="psb-seg" id="psb2"></div>
+              <div class="psb-seg" id="psb3"></div><div class="psb-seg" id="psb4"></div>
+            </div>
+            <div class="pass-req-list" id="passReqList">
+              <span class="pass-req" id="req-upper">Uppercase</span>
+              <span class="pass-req" id="req-number">Number</span>
+              <span class="pass-req" id="req-special">Special char</span>
+              <span class="pass-req" id="req-length">8+ chars</span>
+            </div>
+            <div class="password-hint" id="passHint"></div>
           </div>
-          <div class="password-hint" id="passHint"></div>
         </div>
-      </div>
-      <div class="login-field confirm-pass-field hidden" id="fieldConfirm">
-        <label>Confirm Password / پاس ورڈ تصدیق</label>
-        <div class="pass-input-wrap">
-          <input type="password" id="authConfirmPass" placeholder="••••••••" />
-          <button type="button" class="eye-btn" onclick="toggleEye('authConfirmPass',this)" tabindex="-1">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
-          </button>
+        <div class="login-field confirm-pass-field hidden" id="fieldConfirm">
+          <label>Confirm Password / پاس ورڈ تصدیق</label>
+          <div class="pass-input-wrap">
+            <input type="password" id="authConfirmPass" placeholder="••••••••" />
+            <button type="button" class="eye-btn" onclick="toggleEye('authConfirmPass',this)" tabindex="-1">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+            </button>
+          </div>
+          <div class="pass-match-hint" id="passMatchHint"></div>
         </div>
-        <div class="pass-match-hint" id="passMatchHint"></div>
+        <button class="btn-login-submit" id="btnAuthSubmit">Login / لاگ ان</button>
+        <div class="auth-switch" id="authSwitch">Don't have an account? <a onclick="switchAuthMode('signup')">Sign Up</a></div>
       </div>
-      <button class="btn-login-submit" id="btnAuthSubmit">Login / لاگ ان</button>
-      <div class="auth-switch" id="authSwitch">Don't have an account? <a onclick="switchAuthMode('signup')">Sign Up</a></div>
+
+      <!-- OTP VERIFICATION STEP -->
+      <div id="authOtpStep" class="otp-step hidden">
+        <div class="otp-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>
+        </div>
+        <p class="otp-msg">We've sent a 4-digit verification code to<br><strong id="otpEmailDisplay"></strong></p>
+        <div class="otp-inputs" id="otpInputs">
+          <input type="tel" inputmode="numeric" maxlength="1" class="otp-box" data-idx="0" autocomplete="one-time-code" />
+          <input type="tel" inputmode="numeric" maxlength="1" class="otp-box" data-idx="1" />
+          <input type="tel" inputmode="numeric" maxlength="1" class="otp-box" data-idx="2" />
+          <input type="tel" inputmode="numeric" maxlength="1" class="otp-box" data-idx="3" />
+        </div>
+        <div class="otp-error" id="otpError"></div>
+        <button class="btn-login-submit" id="btnOtpVerify">Verify Code</button>
+        <div class="otp-resend-row">
+          <span id="otpResendHint">Resend code in <b id="otpTimer">30</b>s</span>
+          <a id="btnOtpResend" class="otp-resend-link hidden" onclick="handleOtpResend()">Resend Code</a>
+        </div>
+        <div class="auth-switch"><a onclick="backToAuthForm()">&larr; Use a different email</a></div>
+      </div>
     </div>
   </div>
   <!-- LOGIN REQUIRED (download) -->
@@ -499,6 +523,17 @@
     const RABTA_CHARGE = 10;
     const $            = id => document.getElementById(id);
 
+    /* ── Device ID (used to remember trusted devices, skip OTP next login) ── */
+    function getDeviceId(){
+      let id = localStorage.getItem('pr_device_id');
+      if(!id){
+        id = (crypto.randomUUID ? crypto.randomUUID() : ('dev-'+Date.now()+'-'+Math.random().toString(36).slice(2)));
+        localStorage.setItem('pr_device_id', id);
+      }
+      return id;
+    }
+    const DEVICE_ID = getDeviceId();
+
     /* ── Eye Toggle ── */
     function toggleEye(inputId, btn) {
       const inp = $(inputId), show = inp.type === 'password';
@@ -535,6 +570,7 @@
 
     /* ── Session ── */
     let isLoggedIn=false, loggedInUser='', loggedInName='', userPassword='', authMode='login';
+    let pendingPass='', otpEmail='', otpName='', otpPurpose='', otpResendTimer=null;
     function saveSession(e,n,p){ try{ sessionStorage.setItem('pr_session',JSON.stringify({email:e,name:n,pass:p})); }catch(_){} }
     function clearSession(){ try{ ['pr_session','pr_page','pr_search','pr_trains'].forEach(k=>sessionStorage.removeItem(k)); }catch(_){} }
     function restoreSession(){
@@ -601,6 +637,7 @@
     /* ── Auth Mode ── */
     function switchAuthMode(mode){
       authMode=mode; const iS=mode==='signup';
+      $('authFormStep').classList.remove('hidden'); $('authOtpStep').classList.add('hidden'); stopOtpTimer();
       $('tabLogin').classList.toggle('active',!iS); $('tabSignup').classList.toggle('active',iS);
       $('fieldName').style.display=iS?'':'none';
       $('fieldConfirm').classList.toggle('hidden',!iS);
@@ -614,10 +651,98 @@
     }
     function openAuthOverlay(preferMode){
       if(preferMode) switchAuthMode(preferMode);
+      else { $('authFormStep').classList.remove('hidden'); $('authOtpStep').classList.add('hidden'); stopOtpTimer(); }
       $('loginOverlay').classList.remove('hidden');
       $('authEmail').value=$('authPassword').value=$('authName').value=$('authConfirmPass').value='';
       if(authMode==='signup') checkPasswordStrength('');
       setTimeout(()=>$('authEmail').focus(),150);
+    }
+
+    /* ── Email OTP Verification ── */
+    const otpBoxes = () => Array.from(document.querySelectorAll('#otpInputs .otp-box'));
+    function setupOtpBoxes(){
+      otpBoxes().forEach((inp,i)=>{
+        inp.addEventListener('input',()=>{
+          inp.value = inp.value.replace(/\D/g,'').slice(0,1);
+          if(inp.value && i<otpBoxes().length-1) otpBoxes()[i+1].focus();
+          $('otpError').textContent='';
+        });
+        inp.addEventListener('keydown',e=>{
+          if(e.key==='Backspace' && !inp.value && i>0) otpBoxes()[i-1].focus();
+          if(e.key==='Enter') handleOtpVerify();
+        });
+        inp.addEventListener('paste',e=>{
+          const txt=(e.clipboardData.getData('text')||'').replace(/\D/g,'').slice(0,4);
+          if(txt.length){
+            e.preventDefault();
+            txt.split('').forEach((d,j)=>{ if(otpBoxes()[j]) otpBoxes()[j].value=d; });
+            otpBoxes()[Math.min(txt.length,4)-1].focus();
+          }
+        });
+      });
+    }
+    setupOtpBoxes();
+    function getOtpValue(){ return otpBoxes().map(b=>b.value).join(''); }
+    function clearOtpBoxes(){ otpBoxes().forEach(b=>b.value=''); }
+
+    function enterOtpStep(email,name,purpose){
+      otpEmail=email; otpName=name||''; otpPurpose=purpose;
+      $('otpEmailDisplay').textContent=email;
+      $('authTitle').textContent='Verify Your Email';
+      $('authSubtitle').textContent='Pakistan Railways — Email Verification';
+      $('authFormStep').classList.add('hidden');
+      $('authOtpStep').classList.remove('hidden');
+      clearOtpBoxes(); $('otpError').textContent='';
+      setTimeout(()=>otpBoxes()[0].focus(),150);
+      startOtpTimer();
+    }
+    function backToAuthForm(){
+      stopOtpTimer();
+      switchAuthMode(authMode);
+    }
+    function startOtpTimer(){
+      stopOtpTimer();
+      let t=30;
+      $('otpResendHint').classList.remove('hidden'); $('btnOtpResend').classList.add('hidden');
+      $('otpTimer').textContent=t;
+      otpResendTimer=setInterval(()=>{
+        t--; $('otpTimer').textContent=t;
+        if(t<=0){ stopOtpTimer(); $('otpResendHint').classList.add('hidden'); $('btnOtpResend').classList.remove('hidden'); }
+      },1000);
+    }
+    function stopOtpTimer(){ if(otpResendTimer){ clearInterval(otpResendTimer); otpResendTimer=null; } }
+
+    $('btnOtpVerify').addEventListener('click',handleOtpVerify);
+    async function handleOtpVerify(){
+      const code=getOtpValue();
+      if(code.length!==4){ $('otpError').textContent='Please enter the 4-digit code.'; return; }
+      $('btnOtpVerify').disabled=true; $('btnOtpVerify').textContent='Verifying…';
+      try{
+        const res=await fetch(`${API}/auth/verify-otp`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:otpEmail,otp_code:code,purpose:otpPurpose,device_id:DEVICE_ID,name:otpName})});
+        const data=await res.json();
+        if(!res.ok){ $('otpError').textContent=data.detail||'Incorrect code.'; clearOtpBoxes(); otpBoxes()[0].focus(); return; }
+        stopOtpTimer();
+        loginUser(otpEmail,data.name||otpName,pendingPass);
+        showToast(otpPurpose==='SIGNUP'?`Email verified! Welcome, ${data.name||otpName} 🎉`:`Welcome back, ${data.name||otpName} 👋`,'success');
+        $('loginOverlay').classList.add('hidden');
+      } catch(_){
+        $('otpError').textContent='Connection error. Please try again.';
+      } finally {
+        $('btnOtpVerify').disabled=false; $('btnOtpVerify').textContent='Verify Code';
+      }
+    }
+    async function handleOtpResend(){
+      $('btnOtpResend').classList.add('hidden');
+      try{
+        const res=await fetch(`${API}/auth/resend-otp`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:otpEmail,purpose:otpPurpose})});
+        const data=await res.json();
+        if(!res.ok){ showToast(data.detail||'Could not resend code','error'); $('btnOtpResend').classList.remove('hidden'); return; }
+        showToast('A new code has been sent to your email','success');
+        clearOtpBoxes(); otpBoxes()[0].focus();
+        startOtpTimer();
+      } catch(_){
+        showToast('Connection error','error'); $('btnOtpResend').classList.remove('hidden');
+      }
     }
 
     /* ── Boot ── */
@@ -689,8 +814,8 @@
       if(isLoggedIn){ isLoggedIn=false;loggedInUser='';loggedInName='';userPassword='';clearSession();updateNavState();showToast('Logged out successfully / لاگ آؤٹ کامیاب','logout');showPage('hero');if($('bookingModal').style.display==='flex') $('bookingModal').style.display='none'; }
       else openAuthOverlay('login');
     });
-    $('loginClose').addEventListener('click',()=>$('loginOverlay').classList.add('hidden'));
-    $('loginOverlay').addEventListener('click',e=>{ if(e.target===$('loginOverlay')) $('loginOverlay').classList.add('hidden'); });
+    $('loginClose').addEventListener('click',()=>{ $('loginOverlay').classList.add('hidden'); stopOtpTimer(); });
+    $('loginOverlay').addEventListener('click',e=>{ if(e.target===$('loginOverlay')){ $('loginOverlay').classList.add('hidden'); stopOtpTimer(); } });
     $('btnAuthSubmit').addEventListener('click',handleAuthSubmit);
     [$('authEmail'),$('authPassword'),$('authConfirmPass'),$('authName')].forEach(inp=>inp.addEventListener('keydown',e=>{ if(e.key==='Enter') handleAuthSubmit(); }));
 
@@ -713,17 +838,22 @@
           const res=await fetch(`${API}/auth/signup`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email,password:pass,name})});
           const data=await res.json();
           if(!res.ok){showToast(data.detail||'Signup failed','error');return;}
-          loginUser(email,data.name,pass);
-          showToast(`Account created! Welcome, ${data.name} 🎉`,'success');
+          pendingPass=pass;
+          enterOtpStep(email,data.name,'SIGNUP');
 
         } else {
-          const res=await fetch(`${API}/auth/login`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email,password:pass})});
+          const res=await fetch(`${API}/auth/login`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email,password:pass,device_id:DEVICE_ID})});
           const data=await res.json();
           if(!res.ok){showToast(data.detail||'Login failed','error');return;}
-          loginUser(email,data.name,pass);
-          showToast(`Welcome back, ${data.name} 👋`,'success');
+          pendingPass=pass;
+          if(data.status==='otp_required'){
+            enterOtpStep(email,data.name,data.purpose||'LOGIN');
+          } else {
+            loginUser(email,data.name,pass);
+            showToast(`Welcome back, ${data.name} 👋`,'success');
+            $('loginOverlay').classList.add('hidden');
+          }
         }
-        $('loginOverlay').classList.add('hidden');
 
       } catch(_){
         showToast('Connection error. Please try again.','error');
