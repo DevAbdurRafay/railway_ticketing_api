@@ -3,9 +3,7 @@ from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from pydantic import BaseModel, field_validator, model_validator
-import re, random, hashlib, calendar, secrets, smtplib, ssl
-from email.mime.text import MIMEText
-from email.utils import formataddr
+import re, random, hashlib, calendar, secrets
 from datetime import date, datetime, timedelta, timezone
 import asyncpg, os
 from contextlib import asynccontextmanager
@@ -192,35 +190,34 @@ def _generate_otp() -> str:
     """4-digit numeric OTP, cryptographically random (0000-9999)."""
     return f"{secrets.randbelow(10000):04d}"
 
+import resend
+resend.api_key = os.getenv("RESEND_API_KEY")
+
 def _send_otp_email(to_email: str, name: str, otp_code: str, purpose: str):
     action  = "complete your account signup" if purpose == "SIGNUP" else "verify this login from a new device"
     subject = "Your Pakistan Railways verification code"
     greeting = f"Assalam-o-Alaikum {name}," if name else "Assalam-o-Alaikum,"
-    body = f"""{greeting}
+    body = f"""
+    <div style="font-family:Arial,sans-serif;max-width:480px;margin:0 auto;padding:24px;color:#0b1f12">
+      <p>{greeting}</p>
+      <p>Your verification code to {action} on Pakistan Railways — Passenger Portal is:</p>
+      <p style="font-size:26px;font-weight:800;letter-spacing:6px;color:#083d1f;text-align:center;
+                background:#e8f5ee;padding:16px;border-radius:10px">{otp_code}</p>
+      <p style="font-size:13px;color:#555">This code is valid for {OTP_EXPIRY_MINUTES} minutes and can only be used once.</p>
+      <p style="font-size:13px;color:#555">If you did not request this code, you can safely ignore this email.</p>
+      <hr style="border:none;border-top:1px solid #eee;margin:20px 0">
+      <p style="font-size:12px;color:#999">— Pakistan Railways Passenger Portal (automated message)</p>
+    </div>
+    """
+    if not resend.api_key:
+        raise RuntimeError("RESEND_API_KEY not configured on the server.")
 
-Your verification code to {action} on Pakistan Railways — Passenger Portal is:
-
-    {otp_code}
-
-This code is valid for {OTP_EXPIRY_MINUTES} minutes and can only be used once.
-
-If you did not request this code, you can safely ignore this email — no changes will be made to your account.
-
-— Pakistan Railways Passenger Portal
-This is an automated message, please do not reply to this email.
-"""
-    if not SMTP_EMAIL or not SMTP_APP_PASSWORD:
-        raise RuntimeError("SMTP_EMAIL / SMTP_APP_PASSWORD not configured on the server.")
-
-    msg = MIMEText(body, "plain", "utf-8")
-    msg["Subject"] = subject
-    msg["From"]    = formataddr(("Pakistan Railways", SMTP_EMAIL))
-    msg["To"]      = to_email
-
-    context = ssl.create_default_context()
-    with smtplib.SMTP_SSL("smtp.gmail.com", 465, context=context) as server:
-        server.login(SMTP_EMAIL, SMTP_APP_PASSWORD)
-        server.sendmail(SMTP_EMAIL, to_email, msg.as_string())
+    resend.Emails.send({
+        "from": "Pakistan Railways <onboarding@resend.dev>",
+        "to": [to_email],
+        "subject": subject,
+        "html": body,
+    })
 
 async def _create_and_send_otp(conn, email: str, name: str, purpose: str):
     """Generates a fresh OTP, stores it, and emails it — with a resend cooldown."""

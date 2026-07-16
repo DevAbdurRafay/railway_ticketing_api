@@ -5,3 +5,4 @@ asyncpg
 pydantic
 reportlab
 jinja2
+resend
