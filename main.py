@@ -15,9 +15,9 @@ from typing import Optional, Literal
 
 load_dotenv(dotenv_path=Path(__file__).resolve().parent / ".env")
 DATABASE_URL      = os.getenv("DATABASE_URL")
-BREVO_SMTP_LOGIN = os.getenv("BREVO_SMTP_LOGIN")
-BREVO_SMTP_KEY   = os.getenv("BREVO_SMTP_KEY")
-SENDER_EMAIL     = os.getenv("SENDER_EMAIL")
+SMTP_EMAIL        = os.getenv("SMTP_EMAIL")
+SMTP_APP_PASSWORD = os.getenv("SMTP_APP_PASSWORD")
+
 db_pool: asyncpg.Pool = None
 
 # ── Email OTP Config ──────────────────────────────────────
@@ -28,8 +28,8 @@ OTP_MAX_ATTEMPTS            = 5
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     global db_pool
-    print(f"[DEBUG] BREVO_SMTP_LOGIN = {BREVO_SMTP_LOGIN!r}")
-    print(f"[DEBUG] BREVO_SMTP_KEY set? = {bool(BREVO_SMTP_KEY)}")
+    print(f"[DEBUG] SMTP_EMAIL = {SMTP_EMAIL!r}")
+    print(f"[DEBUG] SMTP_APP_PASSWORD set? = {bool(SMTP_APP_PASSWORD)} (length={len(SMTP_APP_PASSWORD) if SMTP_APP_PASSWORD else 0})")
     db_pool = await asyncpg.create_pool(
         dsn=DATABASE_URL, min_size=1, max_size=5,
         statement_cache_size=0, ssl="require",
@@ -210,18 +210,18 @@ If you did not request this code, you can safely ignore this email — no change
 — Pakistan Railways Passenger Portal
 This is an automated message, please do not reply to this email.
 """
-    if not BREVO_SMTP_LOGIN or not BREVO_SMTP_KEY or not SENDER_EMAIL:
-        raise RuntimeError("BREVO_SMTP_LOGIN / BREVO_SMTP_KEY / SENDER_EMAIL not configured on the server.")
+    if not SMTP_EMAIL or not SMTP_APP_PASSWORD:
+        raise RuntimeError("SMTP_EMAIL / SMTP_APP_PASSWORD not configured on the server.")
 
     msg = MIMEText(body, "plain", "utf-8")
     msg["Subject"] = subject
-    msg["From"]    = formataddr(("Pakistan Railways", SENDER_EMAIL))
+    msg["From"]    = formataddr(("Pakistan Railways", SMTP_EMAIL))
     msg["To"]      = to_email
 
-    with smtplib.SMTP("smtp-relay.brevo.com", 587) as server:
-        server.starttls()
-        server.login(BREVO_SMTP_LOGIN, BREVO_SMTP_KEY)
-        server.sendmail(SENDER_EMAIL, to_email, msg.as_string())
+    context = ssl.create_default_context()
+    with smtplib.SMTP_SSL("smtp.gmail.com", 465, context=context) as server:
+        server.login(SMTP_EMAIL, SMTP_APP_PASSWORD)
+        server.sendmail(SMTP_EMAIL, to_email, msg.as_string())
 
 async def _create_and_send_otp(conn, email: str, name: str, purpose: str):
     """Generates a fresh OTP, stores it, and emails it — with a resend cooldown."""
