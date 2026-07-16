@@ -3,19 +3,21 @@ from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from pydantic import BaseModel, field_validator, model_validator
-import re, random, hashlib, calendar, secrets
+import re, random, hashlib, calendar, secrets, smtplib, ssl
+from email.mime.text import MIMEText
+from email.utils import formataddr
 from datetime import date, datetime, timedelta, timezone
 import asyncpg, os
 from contextlib import asynccontextmanager
 from dotenv import load_dotenv
 from pathlib import Path
 from typing import Optional, Literal
-import resend 
 
 load_dotenv(dotenv_path=Path(__file__).resolve().parent / ".env")
 DATABASE_URL      = os.getenv("DATABASE_URL")
-SMTP_EMAIL        = os.getenv("SMTP_EMAIL")
-SMTP_APP_PASSWORD = os.getenv("SMTP_APP_PASSWORD")
+BREVO_SMTP_LOGIN = os.getenv("BREVO_SMTP_LOGIN")
+BREVO_SMTP_KEY   = os.getenv("BREVO_SMTP_KEY")
+SENDER_EMAIL     = os.getenv("SENDER_EMAIL")
 db_pool: asyncpg.Pool = None
 
 # ── Email OTP Config ──────────────────────────────────────
@@ -26,8 +28,8 @@ OTP_MAX_ATTEMPTS            = 5
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     global db_pool
-    print(f"[DEBUG] SMTP_EMAIL = {SMTP_EMAIL!r}")
-    print(f"[DEBUG] SMTP_APP_PASSWORD set? = {bool(SMTP_APP_PASSWORD)} (length={len(SMTP_APP_PASSWORD) if SMTP_APP_PASSWORD else 0})")
+    print(f"[DEBUG] BREVO_SMTP_LOGIN = {BREVO_SMTP_LOGIN!r}")
+    print(f"[DEBUG] BREVO_SMTP_KEY set? = {bool(BREVO_SMTP_KEY)}")
     db_pool = await asyncpg.create_pool(
         dsn=DATABASE_URL, min_size=1, max_size=5,
         statement_cache_size=0, ssl="require",
@@ -191,33 +193,35 @@ def _generate_otp() -> str:
     """4-digit numeric OTP, cryptographically random (0000-9999)."""
     return f"{secrets.randbelow(10000):04d}"
 
-resend.api_key = os.getenv("RESEND_API_KEY")
-
 def _send_otp_email(to_email: str, name: str, otp_code: str, purpose: str):
     action  = "complete your account signup" if purpose == "SIGNUP" else "verify this login from a new device"
     subject = "Your Pakistan Railways verification code"
     greeting = f"Assalam-o-Alaikum {name}," if name else "Assalam-o-Alaikum,"
-    body = f"""
-    <div style="font-family:Arial,sans-serif;max-width:480px;margin:0 auto;padding:24px;color:#0b1f12">
-      <p>{greeting}</p>
-      <p>Your verification code to {action} on Pakistan Railways — Passenger Portal is:</p>
-      <p style="font-size:26px;font-weight:800;letter-spacing:6px;color:#083d1f;text-align:center;
-                background:#e8f5ee;padding:16px;border-radius:10px">{otp_code}</p>
-      <p style="font-size:13px;color:#555">This code is valid for {OTP_EXPIRY_MINUTES} minutes and can only be used once.</p>
-      <p style="font-size:13px;color:#555">If you did not request this code, you can safely ignore this email.</p>
-      <hr style="border:none;border-top:1px solid #eee;margin:20px 0">
-      <p style="font-size:12px;color:#999">— Pakistan Railways Passenger Portal (automated message)</p>
-    </div>
-    """
-    if not resend.api_key:
-        raise RuntimeError("RESEND_API_KEY not configured on the server.")
+    body = f"""{greeting}
 
-    resend.Emails.send({
-        "from": "Pakistan Railways <onboarding@resend.dev>",
-        "to": [to_email],
-        "subject": subject,
-        "html": body,
-    })
+Your verification code to {action} on Pakistan Railways — Passenger Portal is:
+
+    {otp_code}
+
+This code is valid for {OTP_EXPIRY_MINUTES} minutes and can only be used once.
+
+If you did not request this code, you can safely ignore this email — no changes will be made to your account.
+
+— Pakistan Railways Passenger Portal
+This is an automated message, please do not reply to this email.
+"""
+    if not BREVO_SMTP_LOGIN or not BREVO_SMTP_KEY or not SENDER_EMAIL:
+        raise RuntimeError("BREVO_SMTP_LOGIN / BREVO_SMTP_KEY / SENDER_EMAIL not configured on the server.")
+
+    msg = MIMEText(body, "plain", "utf-8")
+    msg["Subject"] = subject
+    msg["From"]    = formataddr(("Pakistan Railways", SENDER_EMAIL))
+    msg["To"]      = to_email
+
+    with smtplib.SMTP("smtp-relay.brevo.com", 587) as server:
+        server.starttls()
+        server.login(BREVO_SMTP_LOGIN, BREVO_SMTP_KEY)
+        server.sendmail(SENDER_EMAIL, to_email, msg.as_string())
 
 async def _create_and_send_otp(conn, email: str, name: str, purpose: str):
     """Generates a fresh OTP, stores it, and emails it — with a resend cooldown."""
