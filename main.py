@@ -10,6 +10,7 @@ from contextlib import asynccontextmanager
 from dotenv import load_dotenv
 from pathlib import Path
 from typing import Optional, Literal
+import resend 
 
 load_dotenv(dotenv_path=Path(__file__).resolve().parent / ".env")
 DATABASE_URL      = os.getenv("DATABASE_URL")
@@ -190,7 +191,6 @@ def _generate_otp() -> str:
     """4-digit numeric OTP, cryptographically random (0000-9999)."""
     return f"{secrets.randbelow(10000):04d}"
 
-import resend
 resend.api_key = os.getenv("RESEND_API_KEY")
 
 def _send_otp_email(to_email: str, name: str, otp_code: str, purpose: str):
